@@ -39,6 +39,7 @@ const options = {
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 const app = express();
 const server = https.createServer(options, app);
+app.use(express.json());
 
 // Определение схем и моделей
 const channelSchema = new mongoose.Schema({
