@@ -38,6 +38,7 @@ const options = {
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 const app = express();
+const server = https.createServer(options, app);
 
 // Определение схем и моделей
 const channelSchema = new mongoose.Schema({
@@ -417,8 +418,6 @@ bot.action(/^delete_/, async (ctx) => {
 });
 
 // Запуск веб-сервера и бота
-
-const server = https.createServer(options, app);
 
 server.listen(3000, () => {
     console.log('Сервер запущен на http://91.108.243.132:3000');
