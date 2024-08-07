@@ -32,6 +32,7 @@ console.log('Connected to MongoDB');
 const certDir = `/etc/letsencrypt/live`;
 const domain = `fytt.hopto.org`;
 
+app.use(express.static(`public`));
 app.use(express.json());
 
 const options = {
