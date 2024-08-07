@@ -10,6 +10,7 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import https from 'node:https';
 
+const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -31,15 +32,19 @@ console.log('Connected to MongoDB');
 const certDir = `/etc/letsencrypt/live`;
 const domain = `fytt.hopto.org`;
 
+app.use(express.json());
+
 const options = {
     key: fs.readFileSync(`${certDir}/${domain}/privkey.pem`),
     cert: fs.readFileSync(`${certDir}/${domain}/fullchain.pem`)
 };
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
-const app = express();
 const server = https.createServer(options, app);
-app.use(express.json());
+
+server.listen(2000, () => {
+    console.log('Сервер запущен на http://91.108.243.132:3000');
+});
 
 // Определение схем и моделей
 const channelSchema = new mongoose.Schema({
@@ -420,9 +425,6 @@ bot.action(/^delete_/, async (ctx) => {
 
 // Запуск веб-сервера и бота
 
-server.listen(3000, () => {
-    console.log('Сервер запущен на http://91.108.243.132:3000');
-});
 bot.launch();
 
 // Остановка сервера и бота при завершении работы
