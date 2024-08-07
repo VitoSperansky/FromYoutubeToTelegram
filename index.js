@@ -17,9 +17,8 @@ dotenv.config();
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const MONGO_URI = process.env.MONGO_URI;
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH;
-const TOKEN_PATH = process.env.TOKEN_PATH;
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-const REDIRECT_URL = 'http://localhost:3000/oauth2callback';
+const REDIRECT_URL = 'http://91.108.243.132:3000/oauth2callback';
 const LEMNOS_API_URL = 'https://yt.lemnoslife.com/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
@@ -410,7 +409,7 @@ bot.action(/^delete_/, async (ctx) => {
 
 // Запуск веб-сервера и бота
 app.listen(3000, () => {
-    console.log('Сервер запущен на http://localhost:3000');
+    console.log('Сервер запущен на http://91.108.243.132:3000');
 });
 bot.launch();
 
