@@ -306,7 +306,6 @@ async function convertUsernameToStandardUrl(username) {
   // Получение сообщений от пользователя
   bot.on('text', async (ctx) => {
     ctx.session = ctx.session || {};
-    ctx.session.awaitingYouTubeUrl = false
     console.log('Received text:', ctx.message.text); // Логирование текста сообщения
     console.log('Session state:', ctx.session); // Логирование состояния сессии
   
