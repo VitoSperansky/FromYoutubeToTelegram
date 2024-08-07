@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { session } from 'telegraf'; // Используем встроенную поддержку сессий
 import axios from 'axios';
 import dotenv from 'dotenv';
+import https from 'node:https';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,9 +22,6 @@ const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
 const REDIRECT_URL = 'http://localhost:3000/oauth2callback';
 const LEMNOS_API_URL = 'https://yt.lemnoslife.com/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
-
-const https = require('node:https');
-const fs = require('node:fs');
 
 
 // Подключение к MongoDB
