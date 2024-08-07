@@ -169,7 +169,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
                         requested_times: 0
                     });
 
-                    await bot.telegram.sendMessage(chatId, `Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
+                    await bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
                 }
             }
         } catch (error) {
