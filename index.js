@@ -22,10 +22,21 @@ const REDIRECT_URL = 'http://localhost:3000/oauth2callback';
 const LEMNOS_API_URL = 'https://yt.lemnoslife.com/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
+const https = require('node:https');
+const fs = require('node:fs');
+
 
 // Подключение к MongoDB
 await mongoose.connect(MONGO_URI);
 console.log('Connected to MongoDB');
+
+const certDir = `/etc/letsencrypt/live`;
+const domain = `fytt.hopto.org`;
+
+const options = {
+    key: fs.readFileSync(`${certDir}/${domain}/privkey.pem`),
+    cert: fs.readFileSync(`${certDir}/${domain}/fullchain.pem`)
+};
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 const app = express();
@@ -408,7 +419,10 @@ bot.action(/^delete_/, async (ctx) => {
 });
 
 // Запуск веб-сервера и бота
-app.listen(3000, () => {
+
+const server = https.createServer(options, app);
+
+server.listen(3000, () => {
     console.log('Сервер запущен на http://91.108.243.132:3000');
 });
 bot.launch();
