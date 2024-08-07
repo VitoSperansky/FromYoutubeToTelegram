@@ -223,7 +223,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
 
 // Обработка редиректа после авторизации
-app.get('/oauth2callback', async (req, res) => {
+server.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
 
