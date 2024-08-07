@@ -303,10 +303,6 @@ async function convertUsernameToStandardUrl(username) {
         return null;
     }
 }
-
-bot.on('text', async (ctx) => {
-    ctx.reply(ctx.message.chat.id)
-})
   
   // Получение сообщений от пользователя
   bot.on('text', async (ctx) => {
