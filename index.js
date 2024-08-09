@@ -20,7 +20,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const MONGO_URI = process.env.MONGO_URI;
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH;
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
-const REDIRECT_URL = 'https://www.fytt.tech:3000/oauth2callback';
+const REDIRECT_URL = 'https://fytt.tech:3000/oauth2callback';
 const LEMNOS_API_URL = 'https://yt.lemnoslife.com/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
@@ -30,7 +30,7 @@ await mongoose.connect(MONGO_URI);
 console.log('Connected to MongoDB');
 
 const certDir = `/etc/letsencrypt/live`;
-const domain = `www.fytt.tech`;
+const domain = `fytt.tech`;
 
 app.use(express.static(`public`));
 app.use(express.json());
