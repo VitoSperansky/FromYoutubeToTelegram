@@ -30,14 +30,14 @@ await mongoose.connect(MONGO_URI);
 console.log('Connected to MongoDB');
 
 const certDir = `/etc/letsencrypt/live`;
-const domain = `fytt.tech`;
+const domain = `www.fytt.tech`;
 
 app.use(express.static(`public`));
 app.use(express.json());
 
 const options = {
-    key: fs.readFileSync(`${certDir}/www.${domain}/privkey.pem`),
-    cert: fs.readFileSync(`${certDir}/www.${domain}/fullchain.pem`)
+    key: fs.readFileSync(`${certDir}/${domain}/privkey.pem`),
+    cert: fs.readFileSync(`${certDir}/${domain}/fullchain.pem`)
 };
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
