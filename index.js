@@ -30,7 +30,7 @@ await mongoose.connect(MONGO_URI);
 console.log('Connected to MongoDB');
 
 const certDir = `/etc/letsencrypt/live`;
-const domain = `www.fytt.tech`;
+const domain = `fytt.tech`;
 
 app.use(express.static(`public`));
 app.use(express.json());
