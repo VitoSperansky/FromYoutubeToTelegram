@@ -43,8 +43,8 @@ const options = {
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 const server = https.createServer(options, app);
 
-server.listen(3000, () => {
-    console.log(`Сервер запущен на ${domain}:3000`);
+server.listen(80, () => {
+    console.log(`Сервер запущен на ${domain}`);
 });
 
 // Определение схем и моделей
