@@ -1,13 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FromYoutubeToTelegram</title>
+    <title>FYTT Bot - Найди Telegram каналы своих любимых YouTube авторов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+        }
+        h1 {
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+        a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        img {
+            display: flex;
+            justify-content: center;
+            margin: auto;
+            width: 200px;
+            height: 100px;
+        }
+    </style>
 </head>
-<body style="background-color: azure;">
-    <h1 style="text-align: center; font-family: 'Courier New', Courier, monospace;">FromYoutubeToTelegram - бот, позволяющий найти все ютуб каналы, <br> на которые вы подписаны, в телеграмме! <br> <a style="text-align: center; font-family: 'Courier New', Courier, monospace;" href="https://fytt.tech:3000/politic.html">Политика конфиденциальности</a></h1>
-    <p style="text-align: center; font-family: 'Courier New', Courier, monospace;">Ссылка на политику конфиденциальности: https://fytt.tech:3000/politic.html</p>
-    <img src="./fytt.png" style="display: flex; margin: auto; width: 100px;" alt="Фото наполовину телеграмм, наполовину ютуб">
+<body>
+    <div class="container">
+        <img src="./assets/fytt.png" alt="FYTT Logo">
+        <h1>Добро пожаловать в FYTT Bot</h1>
+        <p>FYTT Bot создан для того, чтобы максимально упростить поиск Telegram-каналов ваших любимых авторов на YouTube. Вам больше не нужно тратить время на ручной поиск - бот сделает это за вас, быстро и удобно.</p>
+        <h2>Как работает бот?</h2>
+        <p>FYTT Bot просит вас авторизоваться в свой Google аккаунт, чтобы получить список ваших подписок на YouTube. Затем система обращается к своей базе данных, где хранятся соответствия YouTube-каналов и их Telegram-каналов. Если бот находит соответствия в базе данных, он записывает их в список найденных каналов.</p>
+        <p>Если YouTube-каналы, на которые вы подписаны, отсутствуют в нашей базе данных, бот отправляет запрос в YouTube на получение ссылок социальных сетей, привязанных к каналу. Среди этих ссылок бот ищет ссылку на Telegram. Найдя новую ссылку на Telegram-канал, бот добавляет её в базу данных.</p>
+        <p>В итоге, пользователь получает список YouTube-каналов с их Telegram-каналами, собранный в одном месте.</p>
+        <h2>Безопасность вашего аккаунта</h2>
+        <p>Не стоит беспокоиться о безопасности вашего аккаунта. FYTT Bot имеет открытый исходный код, который может проверить каждый желающий на <a href="https://github.com/VitoSperansky/FromYoutubeToTelegram" target="_blank">GitHub</a>.</p>
+        <p>
+            <a href="https://fytt.tech:3000/politic.html" target="_blank">Политика конфиденциальности</a>
+            <a href="https://fytt.tech:3000/term.html" target="_blank">Условия использования</a>
+        </p>
+    </div>
 </body>
 </html>
