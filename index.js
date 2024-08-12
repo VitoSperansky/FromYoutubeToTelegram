@@ -109,23 +109,32 @@ bot.start(async (ctx) => {
 
 // Обработка нажатий на кнопку "Найти YouTube-каналы в Telegram"
 const find_channels = async (ctx) => {
-    const chatId = ctx.chat.id;
-    const authUrl = await generateAuthUrl(chatId);
-    ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Авторизоваться и найти подписки', url: authUrl }]
-            ]
-        }
-    });
+    if (ctx.session.awaitingChannels) {
+        const chatId = ctx.chat.id;
+        const authUrl = await generateAuthUrl(chatId);
+
+        ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'Авторизоваться и найти подписки', url: authUrl }]
+                ]
+            }
+        });
+
+        ctx.session.awaitingChannels = false; // Установка состояния ожидания каналов
+    }
 };
 
 bot.action('find_channels', async (ctx) => {
     ctx.answerCbQuery();
+    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
+    ctx.session.awaitingChannels = true; // Установка состояния ожидания каналов
     await find_channels(ctx)
 })
 
 bot.command('find_channels', async (ctx) => {
+    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
+    ctx.session.awaitingChannels = true; // Установка состояния ожидания каналов
     await find_channels(ctx)
 })
 
