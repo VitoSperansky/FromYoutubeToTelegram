@@ -263,16 +263,7 @@ app.get('/oauth2callback', async (req, res) => {
         oAuth2Client.setCredentials(tokens);
 
         const subscriptions = await listSubscriptions(oAuth2Client);
-        
-        const user = bot.context.session || {};
-        const findChannelsCount = user.findChannelsCount || false;
-
-        // Выполнение функции checkAndAddNewChannels количество раз, как указано в сессии
-        console.log(bot.context.session)
-        if (findChannelsCount) {
-            await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
-            user.findChannelsCount = false
-        }
+        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
