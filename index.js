@@ -71,8 +71,6 @@ const Channel = mongoose.model('Channel', channelSchema);
 const PendingChannel = mongoose.model('PendingChannel', pendingChannelSchema);
 const Analytics = mongoose.model('Analytics', analyticsSchema);
 
-let awaitingChannels;
-
 // Настройка сессий
 bot.use(session());
 
@@ -84,7 +82,6 @@ async function generateAuthUrl(chatId, ctx) {
     const authUrl = oAuth2Client.generateAuthUrl({
         scope: SCOPES,
         state: chatId.toString(),
-        ctx: ctx   // Сохраняем chatId для последующего использования
     });
     return authUrl;
 }
@@ -115,10 +112,12 @@ const find_channels = async (ctx) => {
     const chatId = ctx.chat.id;
     const authUrl = await generateAuthUrl(chatId, ctx);
 
-    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
-    ctx.session.awaitingChannels = true; // Установка состояния ожидания YouTube URL
+    // Инициализация сессии, если она не существует
+    ctx.session = ctx.session || {};
+    ctx.session.findChannelsCount = ctx.session.findChannelsCount || 0;
 
-    awaitingChannels = true
+    // Увеличение счетчика нажатий кнопки
+    ctx.session.findChannelsCount += 1;
 
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
         reply_markup: {
@@ -180,88 +179,82 @@ function findTelegramLink(links) {
 }
 
 // Функция для проверки и добавления новых каналов
-async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId, ctx) {
-    if (ctx.session.awaitingChannels) {
-        const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
+async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
+    const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
-        const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
+    const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
 
-        // Фильтрация не найденных каналов
-        const foundUrls = new Set(foundChannels.map(ch => ch.youtube_url));
-        const notFoundChannels = subscriptions.filter(sub => !foundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
+    // Фильтрация не найденных каналов
+    const foundUrls = new Set(foundChannels.map(ch => ch.youtube_url));
+    const notFoundChannels = subscriptions.filter(sub => !foundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
 
-        for (const sub of notFoundChannels) {
-            const youtubeUrl = `https://www.youtube.com/channel/${sub.channelId}`;
-            try {
-                const channelInfo = await getChannelLinksFromDescription(sub.channelId);
+    for (const sub of notFoundChannels) {
+        const youtubeUrl = `https://www.youtube.com/channel/${sub.channelId}`;
+        try {
+            const channelInfo = await getChannelLinksFromDescription(sub.channelId);
 
-                if (channelInfo && channelInfo.items && channelInfo.items.length > 0) {
-                    const links = channelInfo.items[0].about.links || [];
-                    const telegramLink = findTelegramLink(links);
+            if (channelInfo && channelInfo.items && channelInfo.items.length > 0) {
+                const links = channelInfo.items[0].about.links || [];
+                const telegramLink = findTelegramLink(links);
 
-                    if (telegramLink) {
-                        // Добавляем новый канал в базу данных
-                        await Channel.create({
-                            name: sub.title,
-                            youtube_url: youtubeUrl,
-                            telegram_url: telegramLink,
-                            requested_times: 0
-                        });
+                if (telegramLink) {
+                    // Добавляем новый канал в базу данных
+                    await Channel.create({
+                        name: sub.title,
+                        youtube_url: youtubeUrl,
+                        telegram_url: telegramLink,
+                        requested_times: 0
+                    });
 
-                        await bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
-                    }
+                    await bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
                 }
-            } catch (error) {
-                console.error('Ошибка получения информации о канале:', error);
             }
+        } catch (error) {
+            console.error('Ошибка получения информации о канале:', error);
         }
-
-        const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
-        const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
-
-        // Фильтрация не найденных каналов
-        const newnotFoundChannels = subscriptions.filter(sub => !newfoundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
-
-        // Группировка каналов по Telegram URL
-        const groupedChannels = newfoundChannels.reduce((acc, ch) => {
-            const telegramUrl = ch.telegram_url.split('/').pop();
-            if (!acc[telegramUrl]) {
-                acc[telegramUrl] = [];
-            }
-            const sanitizedName = sanitizeName(ch.name);
-            acc[telegramUrl].push(`[${sanitizedName}](${ch.youtube_url})`);
-            return acc;
-        }, {});
-
-        // Формирование сообщения для найденных каналов
-        const foundChannelsMessage = Object.entries(groupedChannels).map(([telegramUrl, channels]) => {
-            return `${channels.join(', ')} - [@${telegramUrl}](https://t.me/${telegramUrl})`;
-        }).join('\n') || 'Не найдено';
-
-        // Формирование сообщения для не найденных каналов
-        const notFoundChannelsMessage = newnotFoundChannels.length > 0
-            ? newnotFoundChannels.map(sub => {
-                const sanitizedTitle = sanitizeName(sub.title);
-                return `[${sanitizedTitle}](https://www.youtube.com/channel/${sub.channelId})`;
-            }).join('\n')
-            : 'Не найдено';
-
-        // Отправка сообщений пользователю с нумерацией
-        await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
-        await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
-
-        ctx.session.awaitingChannels = false
     }
+
+    const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
+    const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
+
+    // Фильтрация не найденных каналов
+    const newnotFoundChannels = subscriptions.filter(sub => !newfoundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
+
+    // Группировка каналов по Telegram URL
+    const groupedChannels = newfoundChannels.reduce((acc, ch) => {
+        const telegramUrl = ch.telegram_url.split('/').pop();
+        if (!acc[telegramUrl]) {
+            acc[telegramUrl] = [];
+        }
+        const sanitizedName = sanitizeName(ch.name);
+        acc[telegramUrl].push(`[${sanitizedName}](${ch.youtube_url})`);
+        return acc;
+    }, {});
+
+    // Формирование сообщения для найденных каналов
+    const foundChannelsMessage = Object.entries(groupedChannels).map(([telegramUrl, channels]) => {
+        return `${channels.join(', ')} - [@${telegramUrl}](https://t.me/${telegramUrl})`;
+    }).join('\n') || 'Не найдено';
+
+    // Формирование сообщения для не найденных каналов
+    const notFoundChannelsMessage = newnotFoundChannels.length > 0
+        ? newnotFoundChannels.map(sub => {
+            const sanitizedTitle = sanitizeName(sub.title);
+            return `[${sanitizedTitle}](https://www.youtube.com/channel/${sub.channelId})`;
+        }).join('\n')
+        : 'Не найдено';
+
+    // Отправка сообщений пользователю с нумерацией
+    await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
+    await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
+
+    ctx.session.awaitingChannels = false
 }
 
+// Обработка редиректа после авторизации
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
-    const chatId = req.query.state;  // Восстановление chatId из параметров запроса
-    const ctx = req.query.ctx
-
-    if (!code) {
-        return res.send('Ошибка авторизации. Не получен код.');
-    }
+    const chatId = req.query.state;
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
@@ -272,7 +265,12 @@ app.get('/oauth2callback', async (req, res) => {
         oAuth2Client.setCredentials(tokens);
 
         const subscriptions = await listSubscriptions(oAuth2Client);
-        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId, ctx);
+        const userSession = await bot.telegram.getChat(chatId);
+
+        // Выполнение функции checkAndAddNewChannels количество раз, как указано в сессии
+        for (let i = 0; i < (userSession.findChannelsCount || 0); i++) {
+            await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
+        }
 
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
