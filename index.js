@@ -250,6 +250,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     }
 }
 
+let countGets = 0
 
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
@@ -257,6 +258,10 @@ app.get('/oauth2callback', async (req, res) => {
 
     if (!code) {
         return res.send('Ошибка авторизации. Не получен код.');
+    }
+
+    if (countGets > 1) {
+        return;
     }
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
@@ -267,6 +272,7 @@ app.get('/oauth2callback', async (req, res) => {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
+        countGets += 1
         const subscriptions = await listSubscriptions(oAuth2Client);
         await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
     } catch (error) {
