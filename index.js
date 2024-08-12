@@ -268,7 +268,7 @@ app.get('/oauth2callback', async (req, res) => {
         const findChannelsCount = user.findChannelsCount || false;
 
         // Выполнение функции checkAndAddNewChannels количество раз, как указано в сессии
-        console.log(userSession)
+        console.log(bot.context.session)
         if (findChannelsCount) {
             await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
             user.findChannelsCount = false
