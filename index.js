@@ -456,6 +456,11 @@ bot.action(/^delete_/, async (ctx) => {
 // Константа для максимального количества символов в одном сообщении Telegram
 const MAX_MESSAGE_LENGTH = 4096;
 
+// Функция для удаления или экранирования нежелательных символов в именах
+function sanitizeName(name) {
+    return name.replace(/[\[\]\*]/g, ''); // Убираем скобки и звездочки
+}
+
 // Функция для отправки сообщений по частям с нумерацией
 async function sendLongMessageWithNumbering(chatId, header, message) {
     const parts = splitMessageWithHeader(header, message, MAX_MESSAGE_LENGTH);
