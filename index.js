@@ -100,7 +100,6 @@ bot.start(async (ctx) => {
         await newChat.save()
     }
 
-    const authUrl = await generateAuthUrl(chatId);
     await setBotCommands()
     ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Телеграмм каналов ютуберов!</b>\nОтветы на вопросы: /faq (или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
         [Markup.button.callback('Найти YouTube-каналы в Telegram', 'find_channels')],
@@ -176,16 +175,13 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
     const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
     const foundUrls = new Set(foundChannels.map(ch => ch.youtube_url));
+
     // Фильтрация не найденных каналов
     const notFoundChannels = subscriptions.filter(sub => !foundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
 
     for (const sub of notFoundChannels) {
         const youtubeUrl = `https://www.youtube.com/channel/${sub.channelId}`;
         try {
-            // Получаем информацию о канале из YouTube API
-            //const channelInfo = await getYouTubeChannelInfo(sub.channelId, youtubeApiKey);
-
-            // Получаем ссылки из описания канала с помощью стороннего API
             const channelInfo = await getChannelLinksFromDescription(sub.channelId);
 
             if (channelInfo && channelInfo.items && channelInfo.items.length > 0) {
@@ -211,6 +207,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
     const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
     const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
+
     // Фильтрация не найденных каналов
     const newnotFoundChannels = subscriptions.filter(sub => !newfoundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
 
@@ -230,7 +227,6 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     }).join('\n') || 'Не найдено';
 
     // Формирование сообщения для не найденных каналов
-
     const notFoundChannelsMessage = newnotFoundChannels.length > 0
         ? newnotFoundChannels.map(sub => `[${sub.title}](https://www.youtube.com/channel/${sub.channelId})`).join('\n')
         : 'Не найдено';
@@ -276,8 +272,7 @@ async function listSubscriptions(auth) {
         const response = await service.subscriptions.list({
             auth: auth,
             part: 'snippet',
-            mine: true,
-            maxResults: 50
+            mine: true
         });
 
         const subscriptions = response.data.items.map(item => ({
