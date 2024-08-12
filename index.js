@@ -112,13 +112,6 @@ const find_channels = async (ctx) => {
     const chatId = ctx.chat.id;
     const authUrl = await generateAuthUrl(chatId, ctx);
 
-    // Инициализация сессии, если она не существует
-    ctx.session = ctx.session || {};
-    ctx.session.findChannelsCount = ctx.session.findChannelsCount || false;
-
-    // Увеличение счетчика нажатий кнопки
-    ctx.session.findChannelsCount = true;
-
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
         reply_markup: {
             inline_keyboard: [
