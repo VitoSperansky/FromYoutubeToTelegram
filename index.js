@@ -263,13 +263,15 @@ app.get('/oauth2callback', async (req, res) => {
         oAuth2Client.setCredentials(tokens);
 
         const subscriptions = await listSubscriptions(oAuth2Client);
-        const userSession = await bot.telegram.getChat(chatId);
+        
+        const user = bot.context.session || {};
+        const findChannelsCount = user.findChannelsCount || false;
 
         // Выполнение функции checkAndAddNewChannels количество раз, как указано в сессии
         console.log(userSession)
-        if (userSession.findChannelsCount === true) {
+        if (findChannelsCount) {
             await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
-            userSession.findChannelsCount = false
+            user.findChannelsCount = false
         }
 
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
