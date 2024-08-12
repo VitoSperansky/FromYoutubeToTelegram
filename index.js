@@ -71,6 +71,8 @@ const Channel = mongoose.model('Channel', channelSchema);
 const PendingChannel = mongoose.model('PendingChannel', pendingChannelSchema);
 const Analytics = mongoose.model('Analytics', analyticsSchema);
 
+const awaitingChannels;
+
 // Настройка сессий
 bot.use(session());
 
@@ -112,6 +114,8 @@ const find_channels = async (ctx) => {
     const chatId = ctx.chat.id;
     const authUrl = await generateAuthUrl(chatId);
 
+    awaitingChannels = true
+
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
         reply_markup: {
             inline_keyboard: [
@@ -123,14 +127,10 @@ const find_channels = async (ctx) => {
 
 bot.action('find_channels', async (ctx) => {
     ctx.answerCbQuery();
-    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
-    ctx.session.awaitingChannels = true; // Установка состояния ожидания каналов
     await find_channels(ctx)
 })
 
 bot.command('find_channels', async (ctx) => {
-    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
-    ctx.session.awaitingChannels = true; // Установка состояния ожидания каналов
     await find_channels(ctx)
 })
 
@@ -176,8 +176,8 @@ function findTelegramLink(links) {
 }
 
 // Функция для проверки и добавления новых каналов
-async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId,) {
-    if (ctx.session.awaitingChannels) {
+async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
+    if (awaitingChannels) {
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
         const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -246,7 +246,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId,) {
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
 
-        ctx.session.awaitingChannels = false
+        awaitingChannels = false
     }
 }
 
