@@ -171,12 +171,14 @@ function findTelegramLink(links) {
 }
 
 // Функция для проверки и добавления новых каналов
-async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
+async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId, ) {
+    
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
+    
     const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
-    const foundUrls = new Set(foundChannels.map(ch => ch.youtube_url));
-
+    
     // Фильтрация не найденных каналов
+    const foundUrls = new Set(foundChannels.map(ch => ch.youtube_url));
     const notFoundChannels = subscriptions.filter(sub => !foundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
 
     for (const sub of notFoundChannels) {
@@ -207,7 +209,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
     const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
     const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
-
+    
     // Фильтрация не найденных каналов
     const newnotFoundChannels = subscriptions.filter(sub => !newfoundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
 
@@ -217,7 +219,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         if (!acc[telegramUrl]) {
             acc[telegramUrl] = [];
         }
-        acc[telegramUrl].push(`[${ch.name}](${ch.youtube_url})`);
+        const sanitizedName = sanitizeName(ch.name);
+        acc[telegramUrl].push(`[${sanitizedName}](${ch.youtube_url})`);
         return acc;
     }, {});
 
@@ -228,17 +231,15 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
     // Формирование сообщения для не найденных каналов
     const notFoundChannelsMessage = newnotFoundChannels.length > 0
-        ? newnotFoundChannels.map(sub => `[${sub.title}](https://www.youtube.com/channel/${sub.channelId})`).join('\n')
+        ? newnotFoundChannels.map(sub => {
+            const sanitizedTitle = sanitizeName(sub.title);
+            return `[${sanitizedTitle}](https://www.youtube.com/channel/${sub.channelId})`;
+        }).join('\n')
         : 'Не найдено';
 
-    // Формирование окончательного сообщения
-    const message = `Найденные каналы в Telegram:\n${foundChannelsMessage}\n\nНе найденные каналы в Telegram:\n${notFoundChannelsMessage}`;
-
-    // Отправка сообщения пользователю
-    await bot.telegram.sendMessage(chatId, message, {
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true
-    });
+    // Отправка сообщений пользователю с нумерацией
+    await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
+    await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
 }
 
 
@@ -265,21 +266,32 @@ app.get('/oauth2callback', async (req, res) => {
     }
 });
 
-// Получение списка подписок пользователя
+// Получение списка подписок пользователя с обходом лимита 50 результатов
 async function listSubscriptions(auth) {
-    try {
-        const service = google.youtube('v3');
-        const response = await service.subscriptions.list({
-            auth: auth,
-            part: 'snippet',
-            mine: true,
-            maxResults: 500
-        });
+    const service = google.youtube('v3');
+    let subscriptions = [];
+    let nextPageToken = null;
 
-        const subscriptions = response.data.items.map(item => ({
-            title: item.snippet.title,
-            channelId: item.snippet.resourceId.channelId
-        }));
+    try {
+        do {
+            const response = await service.subscriptions.list({
+                auth: auth,
+                part: 'snippet',
+                mine: true,
+                maxResults: 50,  // Используем 50, чтобы обходить лимит
+                pageToken: nextPageToken  // Устанавливаем токен страницы, если есть
+            });
+
+            // Добавляем текущую партию подписок
+            subscriptions = subscriptions.concat(response.data.items.map(item => ({
+                title: item.snippet.title,
+                channelId: item.snippet.resourceId.channelId
+            })));
+
+            // Получаем токен следующей страницы, если он есть
+            nextPageToken = response.data.nextPageToken;
+
+        } while (nextPageToken);  // Продолжаем, пока есть токен следующей страницы
 
         return subscriptions;
     } catch (error) {
@@ -440,6 +452,51 @@ bot.action(/^delete_/, async (ctx) => {
         ctx.reply('Произошла ошибка при удалении канала.');
     }
 });
+
+// Константа для максимального количества символов в одном сообщении Telegram
+const MAX_MESSAGE_LENGTH = 4096;
+
+// Функция для отправки сообщений по частям с нумерацией
+async function sendLongMessageWithNumbering(chatId, header, message) {
+    const parts = splitMessageWithHeader(header, message, MAX_MESSAGE_LENGTH);
+    for (let i = 0; i < parts.length; i++) {
+        await bot.telegram.sendMessage(chatId, `${header} #[${i + 1}]:\n${parts[i]}`, {
+            parse_mode: 'Markdown',
+            disable_web_page_preview: true
+        });
+    }
+}
+
+// Функция для разделения длинного сообщения на части с учетом заголовка
+function splitMessageWithHeader(header, message, maxLength) {
+    const headerLength = header.length + 10; // Учёт длины заголовка и номера
+    const effectiveMaxLength = maxLength - headerLength;
+
+    if (message.length <= effectiveMaxLength) {
+        return [message];
+    }
+
+    const lines = message.split('\n');
+    const parts = [];
+    let currentPart = '';
+
+    for (const line of lines) {
+        // Если добавление строки превышает лимит, сохраняем текущую часть и начинаем новую
+        if ((currentPart + '\n' + line).length > effectiveMaxLength) {
+            parts.push(currentPart);
+            currentPart = line;
+        } else {
+            currentPart += (currentPart.length > 0 ? '\n' : '') + line;
+        }
+    }
+
+    // Добавляем последнюю часть
+    if (currentPart.length > 0) {
+        parts.push(currentPart);
+    }
+
+    return parts;
+}
 
 // Запуск веб-сервера и бота
 
