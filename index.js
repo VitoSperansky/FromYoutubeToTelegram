@@ -272,7 +272,8 @@ async function listSubscriptions(auth) {
         const response = await service.subscriptions.list({
             auth: auth,
             part: 'snippet',
-            mine: true
+            mine: true,
+            maxResults: 500
         });
 
         const subscriptions = response.data.items.map(item => ({
