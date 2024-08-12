@@ -80,7 +80,6 @@ async function generateAuthUrl(chatId) {
     const { client_id, client_secret } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
         scope: SCOPES,
         state: chatId.toString()
     });
