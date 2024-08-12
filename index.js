@@ -177,7 +177,7 @@ function findTelegramLink(links) {
 
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
-    if (awaitingChannels) {
+    if (awaitingChannels === true) {
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
         const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
