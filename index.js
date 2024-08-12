@@ -172,7 +172,7 @@ function findTelegramLink(links) {
 }
 
 // Функция для проверки и добавления новых каналов
-async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
+async function checkAndAddNewChannels(subscriptions, chatId) {
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
     const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -247,13 +247,12 @@ app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
 
-
     try {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
 
         const subscriptions = await listSubscriptions(oAuth2Client);
-        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
+        await checkAndAddNewChannels(subscriptions, chatId);
 
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
