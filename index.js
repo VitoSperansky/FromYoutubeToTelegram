@@ -77,13 +77,14 @@ let awaitingChannels;
 bot.use(session());
 
 // Генерация ссылки для авторизации
-async function generateAuthUrl(chatId) {
+async function generateAuthUrl(chatId, ctx) {
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
         scope: SCOPES,
-        state: chatId.toString()  // Сохраняем chatId для последующего использования
+        state: chatId.toString(),
+        ctx: ctx   // Сохраняем chatId для последующего использования
     });
     return authUrl;
 }
@@ -112,7 +113,10 @@ bot.start(async (ctx) => {
 // Обработка нажатий на кнопку "Найти YouTube-каналы в Telegram"
 const find_channels = async (ctx) => {
     const chatId = ctx.chat.id;
-    const authUrl = await generateAuthUrl(chatId);
+    const authUrl = await generateAuthUrl(chatId, ctx);
+
+    ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
+    ctx.session.awaitingChannels = true; // Установка состояния ожидания YouTube URL
 
     awaitingChannels = true
 
@@ -177,7 +181,7 @@ function findTelegramLink(links) {
 
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
-    if (awaitingChannels === true) {
+    if (ctx.session.awaitingChannels) {
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
         const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -246,22 +250,17 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
 
-        awaitingChannels = false
+        ctx.session.awaitingChannels = false
     }
 }
-
-let countGets = 0
 
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;  // Восстановление chatId из параметров запроса
+    const ctx = req.query.ctx
 
     if (!code) {
         return res.send('Ошибка авторизации. Не получен код.');
-    }
-
-    if (countGets > 1) {
-        return;
     }
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
@@ -271,10 +270,11 @@ app.get('/oauth2callback', async (req, res) => {
     try {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
-        res.send('Авторизация успешна! Вы можете закрыть это окно.');
-        countGets += 1
+
         const subscriptions = await listSubscriptions(oAuth2Client);
-        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
+        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId, ctx);
+
+        res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
         console.error('Ошибка получения токена', error);
         res.send('Ошибка авторизации.');
