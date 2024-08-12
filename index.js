@@ -363,23 +363,27 @@ bot.on('text', async (ctx) => {
             const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
             if (response.data && response.data.items && response.data.items.length > 0) {
                 const channelName = response.data.items[0].community[0].channelName;
-
-
-                if (channelName) {
-                    await PendingChannel.create({
-                        name: channelName,
-                        youtube_url: youtubeUrl,
-                        telegram_url: telegramUrl,
-                        submitted_by: ctx.from.id
-                    });
-
-                    ctx.reply('Спасибо! Информация отправлена на модерацию.');
-                    bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
-                        [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
-                        [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
-                    ]));
+                
+                let trySearchChannel = await Channel.findOne({youtube_url: youtubeUrl})
+                if (trySearchChannel === null) {
+                    if (channelName) {
+                        await PendingChannel.create({
+                            name: channelName,
+                            youtube_url: youtubeUrl,
+                            telegram_url: telegramUrl,
+                            submitted_by: ctx.from.id
+                        });
+    
+                        ctx.reply('Спасибо! Информация отправлена на модерацию.');
+                        bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
+                            [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
+                            [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
+                        ]));
+                    } else {
+                        ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
+                    }
                 } else {
-                    ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
+                    ctx.reply("Спасибо, за вклад в наше сообщество, но запись о данном канале уже существует.")
                 }
             } else {
                 ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
