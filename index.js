@@ -266,11 +266,9 @@ app.get('/oauth2callback', async (req, res) => {
     try {
         const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
-
+        res.send('Авторизация успешна! Вы можете закрыть это окно.');
         const subscriptions = await listSubscriptions(oAuth2Client);
         await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
-
-        res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
         console.error('Ошибка получения токена', error);
         res.send('Ошибка авторизации.');
