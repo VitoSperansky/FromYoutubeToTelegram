@@ -81,10 +81,11 @@ async function generateAuthUrl(chatId) {
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
         scope: SCOPES,
-        state: chatId.toString()
+        state: chatId.toString()  // Сохраняем chatId для последующего использования
     });
     return authUrl;
 }
+
 
 // Начальная команда
 bot.start(async (ctx) => {
@@ -242,10 +243,13 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId, ) {
 }
 
 
-// Обработка редиректа после авторизации
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
-    const chatId = req.query.state;
+    const chatId = req.query.state;  // Восстановление chatId из параметров запроса
+
+    if (!code) {
+        return res.send('Ошибка авторизации. Не получен код.');
+    }
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
@@ -264,6 +268,7 @@ app.get('/oauth2callback', async (req, res) => {
         res.send('Ошибка авторизации.');
     }
 });
+
 
 // Получение списка подписок пользователя с обходом лимита 50 результатов
 async function listSubscriptions(auth) {
