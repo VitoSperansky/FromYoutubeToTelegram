@@ -71,7 +71,7 @@ const Channel = mongoose.model('Channel', channelSchema);
 const PendingChannel = mongoose.model('PendingChannel', pendingChannelSchema);
 const Analytics = mongoose.model('Analytics', analyticsSchema);
 
-const awaitingChannels;
+let awaitingChannels;
 
 // Настройка сессий
 bot.use(session());
