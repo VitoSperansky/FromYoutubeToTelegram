@@ -114,10 +114,10 @@ const find_channels = async (ctx) => {
 
     // Инициализация сессии, если она не существует
     ctx.session = ctx.session || {};
-    ctx.session.findChannelsCount = ctx.session.findChannelsCount || 0;
+    ctx.session.findChannelsCount = ctx.session.findChannelsCount || false;
 
     // Увеличение счетчика нажатий кнопки
-    ctx.session.findChannelsCount += 1;
+    ctx.session.findChannelsCount = true;
 
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
         reply_markup: {
@@ -247,8 +247,6 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     // Отправка сообщений пользователю с нумерацией
     await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
     await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
-
-    ctx.session.awaitingChannels = false
 }
 
 // Обработка редиректа после авторизации
@@ -268,8 +266,10 @@ app.get('/oauth2callback', async (req, res) => {
         const userSession = await bot.telegram.getChat(chatId);
 
         // Выполнение функции checkAndAddNewChannels количество раз, как указано в сессии
-        for (let i = 0; i < (userSession.findChannelsCount || 0); i++) {
+        console.log(userSession)
+        if (userSession.findChannelsCount === true) {
             await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
+            userSession.findChannelsCount = false
         }
 
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
