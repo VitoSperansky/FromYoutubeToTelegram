@@ -247,14 +247,7 @@ app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
 
-    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-    const { client_id, client_secret } = credentials.web;
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
-
     try {
-        const { tokens } = await oAuth2Client.getToken(code);
-        oAuth2Client.setCredentials(tokens);
-
         const subscriptions = await listSubscriptions(oAuth2Client);
         await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
