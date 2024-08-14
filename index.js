@@ -250,29 +250,25 @@ app.get('/oauth2callback', async (req, res) => {
     if (isProcessing) return; // Если функция уже выполняется, ничего не делаем
     isProcessing = true; // Помечаем, что функция начала выполнение
 
+    const code = req.query.code;
+    const chatId = req.query.state;
+
+    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+    const { client_id, client_secret } = credentials.web;
+    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
+
     try {
-        const code = req.query.code;
-        const chatId = req.query.state;
+        const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens);
 
-        const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-        const { client_id, client_secret } = credentials.web;
-        const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
+        const subscriptions = await listSubscriptions(oAuth2Client);
 
-        try {
-            const { tokens } = await oAuth2Client.getToken(code);
-            oAuth2Client.setCredentials(tokens);
+        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
-            const subscriptions = await listSubscriptions(oAuth2Client);
-
-            await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
-
-            res.send('Авторизация успешна! Вы можете закрыть это окно.');
-        } catch (error) {
-            console.error('Ошибка получения токена', error);
-            res.send('Ошибка авторизации.');
-        }
-    } finally {
-        isProcessing = false; // Сбрасываем флаг после выполнения функции
+        res.send('Авторизация успешна! Вы можете закрыть это окно.');
+    } catch (error) {
+        console.error('Ошибка получения токена', error);
+        res.send('Ошибка авторизации.');
     }
 });
 
