@@ -243,14 +243,6 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
 }
 
-app.get('/success', async (req, res) => {
-    try {
-        res.send('Авторизация успешна! Вы можете закрыть это окно.');
-    } catch {
-        res.send('Ошибка!')
-    }
-})
-
 // Обработка редиректа после авторизации
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
@@ -258,7 +250,7 @@ app.get('/oauth2callback', async (req, res) => {
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, 'https://fytt.tech:3000/success');
+    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
 
     try {
         const { tokens } = await oAuth2Client.getToken(code);
