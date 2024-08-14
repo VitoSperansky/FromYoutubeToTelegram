@@ -253,8 +253,6 @@ app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
 
-    await sleep(5000)
-
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
