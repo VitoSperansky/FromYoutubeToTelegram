@@ -243,13 +243,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
 }
 
-let isProcessing = false;
-
 // Обработка редиректа после авторизации
 app.get('/oauth2callback', async (req, res) => {
-    if (isProcessing) return; // Если функция уже выполняется, ничего не делаем
-    isProcessing = true; // Помечаем, что функция начала выполнение
-
     const code = req.query.code;
     const chatId = req.query.state;
 
