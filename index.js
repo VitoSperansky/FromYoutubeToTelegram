@@ -75,13 +75,14 @@ const Analytics = mongoose.model('Analytics', analyticsSchema);
 bot.use(session());
 
 // Генерация ссылки для авторизации
-async function generateAuthUrl(chatId, ctx) {
+async function generateAuthUrl(chatId) {
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'online',
         scope: SCOPES,
-        state: chatId.toString(),
+        state: chatId.toString()
     });
     return authUrl;
 }
