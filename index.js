@@ -253,7 +253,7 @@ app.get('/oauth2callback', async (req, res) => {
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
 
     try {
-        const { tokens } = oAuth2Client.getToken(code);
+        const { tokens } = await oAuth2Client.getToken(code);
         oAuth2Client.setCredentials(tokens);
 
         const subscriptions = await listSubscriptions(oAuth2Client);
