@@ -24,6 +24,11 @@ const REDIRECT_URL = 'https://fytt.tech:3000/oauth2callback';
 const LEMNOS_API_URL = 'https://yt.lemnoslife.com/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
+function sleep(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+}
 
 // Подключение к MongoDB
 await mongoose.connect(MONGO_URI);
@@ -247,6 +252,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
+
+    await sleep(5000)
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
