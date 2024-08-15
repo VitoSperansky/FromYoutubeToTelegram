@@ -202,9 +202,6 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             awatingChannels: true
         })
         await newChat.save()
-    } else {
-        chat.awatingChannels = true
-        await chat.save()
     }
 
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
