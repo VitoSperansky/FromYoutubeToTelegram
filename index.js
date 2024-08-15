@@ -202,6 +202,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             awatingChannels: true
         })
         await newChat.save()
+
+        return chat = await Analytics.findOne({ chatId: chatId })
     }
 
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
@@ -269,7 +271,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         : 'Не найдено';
 
         console.log("До отправки", chat.awatingChannels)
-    if (chat.awatingChannels || newChat.awatingChannels) {
+    if (chat.awatingChannels) {
         chat.awatingChannels = false
         chat.save()
         console.log("Отправка", chat.awatingChannels)
