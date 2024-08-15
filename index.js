@@ -300,8 +300,6 @@ app.get('/oauth2callback', async (req, res) => {
             console.error('Ошибка получения токена', error);
             res.send('Ошибка авторизации.');
         }
-    } else {
-        res.send('Авторизация успешна! Вы можете закрыть это окно.');
     }
 });
 
