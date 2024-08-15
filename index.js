@@ -87,7 +87,7 @@ async function generateAuthUrl(chatId) {
     const { client_id, client_secret } = credentials.web;
     const oAuth2Client = new OAuth2Client(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'offline',
+        access_type: 'online',
         scope: SCOPES,
         state: chatId.toString()
     });
