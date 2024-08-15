@@ -26,7 +26,7 @@ const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
 function sleep(ms) {
     return new Promise((resolve) => {
-        setTimeout(resolve, ms);
+      setTimeout(resolve, ms);
     });
 }
 
@@ -193,7 +193,6 @@ function findTelegramLink(links) {
 
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
-
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
     const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -268,38 +267,24 @@ app.get('/oauth2callback', async (req, res) => {
     const code = req.query.code;
     const chatId = req.query.state;
 
-    let chat = await Analytics.findOne({ chatId: chatId })
-    if (chat === null) {
-        let newChat = new Analytics({
-            chatId: ctx.message.chat.id,
-            username: ctx.message.chat.username,
-            awatingChannels: true
-        })
-        await newChat.save()
-    }
-    let status = chat.awatingChannels
+    const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
+    const { client_id, client_secret } = credentials.web;
+    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
 
-    if (status) {
-        chat.awatingChannels = false
-        await chat.save()
+    try {
+        const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens);
 
-        const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
-        const { client_id, client_secret } = credentials.web;
-        const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
+        const subscriptions = await listSubscriptions(oAuth2Client);
 
-        try {
-            const { tokens } = await oAuth2Client.getToken(code);
-            oAuth2Client.setCredentials(tokens);
+        await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
-            const subscriptions = await listSubscriptions(oAuth2Client);
-
-            await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
-
-            res.send('Авторизация успешна! Вы можете закрыть это окно.');
-        } catch (error) {
-            console.error('Ошибка получения токена', error);
-            res.send('Ошибка авторизации.');
-        }
+        res.send('Авторизация успешна! Вы можете закрыть это окно.');
+        server.destroy()
+    } catch (error) {
+        console.error('Ошибка получения токена', error);
+        res.send('Ошибка авторизации.');
+        server.destroy()
     }
 });
 
