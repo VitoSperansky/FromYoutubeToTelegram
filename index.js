@@ -280,6 +280,8 @@ app.get('/oauth2callback', async (req, res) => {
 
         await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
+        resolve(oAuth2Client);
+
         res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
         console.error('Ошибка получения токена', error);
