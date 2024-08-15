@@ -71,8 +71,12 @@ const pendingChannelSchema = new mongoose.Schema({
 const analyticsSchema = new mongoose.Schema({
     username: { type: String, unique: true },
     chatId: { type: String, unique: true },
-    awatingChannels: Boolean
-});
+    awatingChannels: Boolean,
+}, 
+        {
+            timestamps: true
+        }
+);
 
 const Channel = mongoose.model('Channel', channelSchema);
 const PendingChannel = mongoose.model('PendingChannel', pendingChannelSchema);
