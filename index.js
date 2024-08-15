@@ -271,9 +271,11 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         }).join('\n')
         : 'Не найдено';
 
+        console.log("До отправки", chat.awatingChannels)
     if (chat.awatingChannels || newChat.awatingChannels) {
         chat.awatingChannels = false
         chat.save()
+        console.log("Отправка", chat.awatingChannels)
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
