@@ -9,6 +9,7 @@ import { session } from 'telegraf'; // Используем встроенную
 import axios from 'axios';
 import dotenv from 'dotenv';
 import https from 'node:https';
+import { OAuth2Client } from 'google-auth-library'
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -84,9 +85,9 @@ bot.use(session());
 async function generateAuthUrl(chatId) {
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
+    const oAuth2Client = new OAuth2Client(client_id, client_secret, REDIRECT_URL);
     const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: 'online',
+        access_type: 'offline',
         scope: SCOPES,
         state: chatId.toString()
     });
@@ -269,7 +270,7 @@ app.get('/oauth2callback', async (req, res) => {
 
     const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
     const { client_id, client_secret } = credentials.web;
-    const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, REDIRECT_URL);
+    const oAuth2Client = new OAuth2Client(client_id, client_secret, REDIRECT_URL);
 
     try {
         const { tokens } = await oAuth2Client.getToken(code);
