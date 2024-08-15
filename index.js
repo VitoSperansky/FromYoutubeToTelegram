@@ -265,6 +265,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
 // Обработка редиректа после авторизации
 app.get('/oauth2callback', async (req, res) => {
+    const code = req.query.code;
+    const chatId = req.query.state;
 
     let chat = await Analytics.findOne({ chatId: chatId })
     if (chat === null) {
@@ -280,9 +282,6 @@ app.get('/oauth2callback', async (req, res) => {
     if (status) {
         chat.awatingChannels = false
         await chat.save()
-
-        const code = req.query.code;
-        const chatId = req.query.state;
 
         const credentials = JSON.parse(fs.readFileSync(CREDENTIALS_PATH));
         const { client_id, client_secret } = credentials.web;
