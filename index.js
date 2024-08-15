@@ -205,6 +205,10 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     let status = chat.awatingChannels
 
     if (status) {
+
+        chat.awatingChannels = false
+        await chat.save()
+
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
         const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -272,9 +276,6 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
-
-        chat.awatingChannels = false
-        await chat.save()
     }
 }
 
