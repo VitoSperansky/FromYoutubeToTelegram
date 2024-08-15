@@ -194,6 +194,19 @@ function findTelegramLink(links) {
 
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
+    let chat = await Analytics.findOne({ chatId: chatId })
+    if (chat === null) {
+        let newChat = new Analytics({
+            chatId: ctx.message.chat.id,
+            username: ctx.message.chat.username,
+            awatingChannels: true
+        })
+        await newChat.save()
+    } else {
+        chat.awatingChannels = true
+        await chat.save()
+    }
+
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
     const foundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
@@ -258,9 +271,11 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         }).join('\n')
         : 'Не найдено';
 
-    // Отправка сообщений пользователю с нумерацией
-    await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
-    await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
+    if (chat.awatingChannels || newChat.awatingChannels) {
+        // Отправка сообщений пользователю с нумерацией
+        await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
+        await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
+    }
 }
 
 // Обработка редиректа после авторизации
