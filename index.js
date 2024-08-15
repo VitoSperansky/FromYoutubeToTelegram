@@ -279,16 +279,10 @@ app.get('/oauth2callback', async (req, res) => {
 
         await checkAndAddNewChannels(subscriptions, oAuth2Client, chatId);
 
-        
-        req.session.destroy((err) => {
-            res.send('Авторизация успешна! Вы можете закрыть это окно.');
-        })
+        res.send('Авторизация успешна! Вы можете закрыть это окно.');
     } catch (error) {
         console.error('Ошибка получения токена', error);
-        
-        req.session.destroy((err) => {
-            res.send('Ошибка авторизации.');
-        })
+        res.send('Ошибка авторизации.');
     }
 });
 
