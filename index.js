@@ -69,7 +69,7 @@ const pendingChannelSchema = new mongoose.Schema({
 });
 
 const analyticsSchema = new mongoose.Schema({
-    username: { type: String, unique: true },
+    username: String,
     chatId: { type: String, unique: true },
     awatingChannels: Boolean,
 }, 
