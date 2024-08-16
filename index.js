@@ -102,19 +102,16 @@ async function generateAuthUrl(chatId) {
 // Начальная команда
 bot.start(async (ctx) => {
     const chatId = ctx.chat.id;
-
     let chat = await Analytics.findOne({ chatId: chatId })
-    try {
-        let username = ctx.message.chat.username
-        if (chat === null) {
+    if (chat === null) {
+        try {
+            let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username
             })
             await newChat.save()
-        }
-    } catch {
-        if (chat === null) {
+        } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name
@@ -136,17 +133,15 @@ const find_channels = async (ctx) => {
     const authUrl = await generateAuthUrl(chatId, ctx);
 
     let chat = await Analytics.findOne({ chatId: chatId })
-    try {
-        let username = ctx.message.chat.username
-        if (chat === null) {
+    if (chat === null) {
+        try {
+            let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username
             })
             await newChat.save()
-        }
-    } catch {
-        if (chat === null) {
+        } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name
@@ -217,17 +212,15 @@ function findTelegramLink(links) {
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     let chat = await Analytics.findOne({ chatId: chatId })
-    try {
-        let username = ctx.message.chat.username
-        if (chat === null) {
+    if (chat === null) {
+        try {
+            let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username
             })
             await newChat.save()
-        }
-    } catch {
-        if (chat === null) {
+        } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name
