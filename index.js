@@ -119,6 +119,8 @@ bot.start(async (ctx) => {
             await newChat.save()
         }
     }
+    chat.awatingChannels = true
+    await chat.save()
 
     await setBotCommands()
     ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Телеграмм каналов ютуберов!</b>\nОтветы на вопросы: /faq (или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
@@ -149,7 +151,9 @@ const find_channels = async (ctx) => {
             await newChat.save()
         }
     }
-
+    chat.awatingChannels = true
+    await chat.save()
+    
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
         reply_markup: {
             inline_keyboard: [
