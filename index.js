@@ -105,21 +105,21 @@ bot.start(async (ctx) => {
 
     let chat = await Analytics.findOne({ chatId: chatId })
     try {
-    let username = ctx.message.chat.username
-    if (chat === null) {
-        let newChat = new Analytics({
-            chatId: ctx.message.chat.id,
-            username: ctx.message.chat.username
-        })
-        await newChat.save()
-    }
+        let username = ctx.message.chat.username
+        if (chat === null) {
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: username
+            })
+            await newChat.save()
+        }
     } catch {
         if (chat === null) {
-        let newChat = new Analytics({
-            chatId: ctx.message.chat.id,
-            username: "нету"
-        })
-        await newChat.save()
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: ctx.message.chat.first_name
+            })
+            await newChat.save()
         }
     }
 
@@ -136,16 +136,23 @@ const find_channels = async (ctx) => {
     const authUrl = await generateAuthUrl(chatId, ctx);
 
     let chat = await Analytics.findOne({ chatId: chatId })
-    if (chat === null) {
-        let newChat = new Analytics({
-            chatId: ctx.message.chat.id,
-            username: ctx.message.chat.username,
-            awatingChannels: true
-        })
-        await newChat.save()
-    } else {
-        chat.awatingChannels = true
-        await chat.save()
+    try {
+        let username = ctx.message.chat.username
+        if (chat === null) {
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: username
+            })
+            await newChat.save()
+        }
+    } catch {
+        if (chat === null) {
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: ctx.message.chat.first_name
+            })
+            await newChat.save()
+        }
     }
 
     ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
@@ -210,15 +217,23 @@ function findTelegramLink(links) {
 // Функция для проверки и добавления новых каналов
 async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
     let chat = await Analytics.findOne({ chatId: chatId })
-    if (chat === null) {
-        let newChat = new Analytics({
-            chatId: ctx.message.chat.id,
-            username: ctx.message.chat.username,
-            awatingChannels: true
-        })
-        await newChat.save()
-
-        return chat = await Analytics.findOne({ chatId: chatId })
+    try {
+        let username = ctx.message.chat.username
+        if (chat === null) {
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: username
+            })
+            await newChat.save()
+        }
+    } catch {
+        if (chat === null) {
+            let newChat = new Analytics({
+                chatId: ctx.message.chat.id,
+                username: ctx.message.chat.first_name
+            })
+            await newChat.save()
+        }
     }
 
     const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
