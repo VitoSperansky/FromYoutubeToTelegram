@@ -108,13 +108,15 @@ bot.start(async (ctx) => {
             let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: username
+                username: username,
+                awatingChannels: true
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: ctx.message.chat.first_name
+                username: ctx.message.chat.first_name,
+                awatingChannels: true
             })
             await newChat.save()
         }
@@ -140,13 +142,15 @@ const find_channels = async (ctx) => {
             let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: username
+                username: username,
+                awatingChannels: true
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: ctx.message.chat.first_name
+                username: ctx.message.chat.first_name,
+                awatingChannels: true
             })
             await newChat.save()
         }
@@ -221,13 +225,15 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             let username = ctx.message.chat.username
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: username
+                username: username,
+                awatingChannels: true
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
-                username: ctx.message.chat.first_name
+                username: ctx.message.chat.first_name,
+                awatingChannels: true
             })
             await newChat.save()
         }
