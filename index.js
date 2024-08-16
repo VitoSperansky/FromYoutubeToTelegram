@@ -72,6 +72,7 @@ const analyticsSchema = new mongoose.Schema({
     username: String,
     chatId: { type: String, unique: true },
     awatingChannels: Boolean,
+    status: String
 }, 
         {
             timestamps: true
@@ -109,14 +110,16 @@ bot.start(async (ctx) => {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         }
@@ -145,14 +148,16 @@ const find_channels = async (ctx) => {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         }
@@ -229,14 +234,16 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: username,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         } catch {
             let newChat = new Analytics({
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name,
-                awatingChannels: true
+                awatingChannels: true,
+                status: "member"
             })
             await newChat.save()
         }
@@ -308,6 +315,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
     if (chat.awatingChannels) {
         chat.awatingChannels = false
+        chat.status = "user"
         chat.save()
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
