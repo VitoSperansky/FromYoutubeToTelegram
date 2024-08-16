@@ -104,6 +104,10 @@ bot.start(async (ctx) => {
     const chatId = ctx.chat.id;
 
     let chat = await Analytics.findOne({ chatId: chatId })
+    let username = ctx.message.chat.username
+    if (username == null) {
+        username = "Отстуствует"
+    }
     if (chat === null) {
         let newChat = new Analytics({
             chatId: ctx.message.chat.id,
