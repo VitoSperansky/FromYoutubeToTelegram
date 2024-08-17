@@ -207,7 +207,11 @@ bot.command('submit', async (ctx) => {
     let text = ctx.message.text.replace('/submit ', '')
     try {
         await bot.telegram.sendMessage(MODERATOR_CHAT_ID, text);
-        ctx.reply("Сообщение успешно отправлено модератору.")
+        let username = ctx.message.chat.username
+        if (username === null) {
+            username = ctx.message.chat.first_name
+        }
+        ctx.reply(`Сообщение успешно отправлено модератору.\n\nChatId Пользователя: ${ctx.message.chat.id}\nUsername: ${username}`)
     } catch {
         ctx.reply("Ошибка при отправке сообщения.")
     } 
