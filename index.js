@@ -194,6 +194,7 @@ bot.command('send', async (ctx) => {
         let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '');
         try {
             await bot.telegram.sendMessage(chatId, text);
+            ctx.reply(`Сообщение успешно отправлено пользователю. \n\nChatId: ${chatId}\nТекст: ${text}`)
         } catch {
             ctx.reply("Ошибка при отправке сообщения.")
         }
@@ -203,9 +204,10 @@ bot.command('send', async (ctx) => {
 })
 
 bot.command('submit', async (ctx) => {
-    let text = ctx.message.text.replace('/submit ', '').replace(`${chatId} `, '')
+    let text = ctx.message.text.replace('/submit ', '')
     try {
         await bot.telegram.sendMessage(MODERATOR_CHAT_ID, text);
+        ctx.reply("Сообщение успешно отправлено модератору.")
     } catch {
         ctx.reply("Ошибка при отправке сообщения.")
     } 
