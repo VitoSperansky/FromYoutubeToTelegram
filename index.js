@@ -191,12 +191,26 @@ bot.command('faq', async (ctx) => {
 bot.command('send', async (ctx) => {
     if(ctx.message.chat.id == MODERATOR_CHAT_ID) {
         let chatId = ctx.message.text.replace('/send ', '').replace(/ [\s\S]+/, '');
-        let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '')
-        bot.telegram.sendMessage(chatId, text);
+        let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '');
+        try {
+            await bot.telegram.sendMessage(chatId, text);
+        } catch {
+            ctx.reply("Ошибка при отправке сообщения.")
+        }
     } else {
         ctx.reply("Вы не админ!")
     }
 })
+
+bot.command('submit', async (ctx) => {
+    let text = ctx.message.text.replace('/submit ', '').replace(`${chatId} `, '')
+    try {
+        await bot.telegram.sendMessage(MODERATOR_CHAT_ID, text);
+    } catch {
+        ctx.reply("Ошибка при отправке сообщения.")
+    } 
+})
+
 
 // Установка команд для отображения в меню
 async function setBotCommands() {
