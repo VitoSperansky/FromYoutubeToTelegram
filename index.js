@@ -191,7 +191,7 @@ bot.command('faq', async (ctx) => {
 bot.command('send', async (ctx) => {
     if(ctx.message.chat.id == MODERATOR_CHAT_ID) {
         let chatId = ctx.message.text.replace('/send ', '').replace(/ [\s\S]+/, '');
-        let text = toString(ctx.message.text.replace('/send ', '').replace(`${chatId} `, ''));
+        let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '').toString();
         try {
             await bot.telegram.sendMessage(chatId, text, {
                 parse_mode: 'HTML',
