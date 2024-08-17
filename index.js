@@ -194,7 +194,7 @@ bot.command('send', async (ctx) => {
         let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '');
         try {
             await bot.telegram.sendMessage(chatId, text, {
-                parse_mode: 'HTML',
+                parse_mode: 'Markdown',
                 disable_web_page_preview: true
             });
             ctx.reply(`Сообщение успешно отправлено пользователю. \n\nChatId: ${chatId}\nТекст: ${text}`)
