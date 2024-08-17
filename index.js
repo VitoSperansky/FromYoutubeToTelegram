@@ -209,7 +209,7 @@ bot.command('submit', async (ctx) => {
     let text = ctx.message.text.replace('/submit ', '')
     try {
         let username = ctx.message.chat.username
-        if (username === null) {
+        if (username === undefined) {
             username = ctx.message.chat.first_name
         }
         await bot.telegram.sendMessage(MODERATOR_CHAT_ID, `${text}\n\nChatId Пользователя: ${ctx.message.chat.id}\nUsername: ${username}`);
