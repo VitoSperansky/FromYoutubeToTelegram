@@ -191,7 +191,7 @@ bot.command('faq', async (ctx) => {
 bot.command('send', async (ctx) => {
     if(ctx.message.chat.id == MODERATOR_CHAT_ID) {
         let [send, userChatId, text] = ctx.message.text.split(/\s/, 3);
-        ctx.reply(`${userChatId}, ${text}`)
+        ctx.reply(`${userChatId}, ${send}, ${text}`)
     }
 })
 
