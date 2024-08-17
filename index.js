@@ -190,8 +190,11 @@ bot.command('faq', async (ctx) => {
 
 bot.command('send', async (ctx) => {
     if(ctx.message.chat.id == MODERATOR_CHAT_ID) {
-        let [userChatId, text] = ctx.message.text.replace('/send', '').split(/\s/, 2);
-        ctx.reply(`${userChatId}, ${text}`)
+        let chatId = ctx.message.text.replace('/send ', '').replace(/ [\s\S]+/, '');
+        let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '')
+        bot.telegram.sendMessage(chatId, text);
+    } else {
+        ctx.reply("Вы не админ!")
     }
 })
 
