@@ -231,8 +231,10 @@ async function setBotCommands() {
 
 // Функция для получения ссылок из описания канала с помощью стороннего API
 async function getChannelLinksFromDescription(channelId) {
+    console.log("yes")
     try {
         const response = await axios.get(`${LEMNOS_API_URL}?part=about&id=${channelId}`);
+        console.log(response.data)
         return response.data;
     } catch (error) {
         console.error('Error getting channel info from Lemnos Life API:', error);
