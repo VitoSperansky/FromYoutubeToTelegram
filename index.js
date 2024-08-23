@@ -130,7 +130,7 @@ bot.start(async (ctx) => {
 
 
     await setBotCommands()
-    ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Телеграмм каналов ютуберов!</b>\nОтветы на вопросы: /faq (или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
+    ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Телеграмм каналов ютуберов!</b>\nБот безопасен, так как представляет собой открытый исходный код, который может посмотреть каждый желающий. (/faq или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
         [Markup.button.callback('Найти YouTube-каналы в Telegram', 'find_channels')],
         [Markup.button.callback('Связать YouTube-канал с Telegram-каналом', 'link_channel')]
     ]));
