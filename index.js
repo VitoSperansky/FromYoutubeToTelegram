@@ -166,12 +166,14 @@ const find_channels = async (ctx) => {
         await chat.save()
     }
 
-    ctx.replyWithHTML('<b>Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:</b>\n\n❗АВТОРИЗАЦИЯ НУЖНА ТОЛЬКО ДЛЯ ПОЛУЧЕНИЯ СПИСКА ВАШИХ ПОДПИСОК (ЗАПРАШИВАЮТСЯ ПРАВА YOUTUBE.READONLY - ТОЛЬКО ЧТЕНИЯ, (ОТКРЫТЫЙ ИСХОДНЫЙ КОД)[https://github.com/VitoSperansky/FromYoutubeToTelegram]❗\n\n<i>Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)</i>', {
+    ctx.replyWithMarkdown('*Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:*\n\n❗АВТОРИЗАЦИЯ НУЖНА ТОЛЬКО ДЛЯ ПОЛУЧЕНИЯ СПИСКА ВАШИХ ПОДПИСОК (ЗАПРАШИВАЮТСЯ ПРАВА YOUTUBE.READONLY - ТОЛЬКО ЧТЕНИЯ, [ОТКРЫТЫЙ ИСХОДНЫЙ КОД](https://github.com/VitoSperansky/FromYoutubeToTelegram)❗\n\n_Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)_', {
         reply_markup: {
             inline_keyboard: [
                 [{ text: 'Авторизоваться и найти подписки', url: authUrl }]
             ]
         }
+    }, {
+        disable_web_page_preview: true
     });
 };
 
