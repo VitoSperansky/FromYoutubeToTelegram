@@ -307,7 +307,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         }
     }
     if (chat.awatingChannels) {
-        let msgWait = await bot.sendMessage(chatId, `Бот сопоставляет Youtube и Telegram каналы, это займет время...`);
+        let msgWait = await bot.telegram.sendMessage(chatId, `Бот сопоставляет Youtube и Telegram каналы, это займет время...`);
 
         chat.awatingChannels = false
         chat.status = "user"
