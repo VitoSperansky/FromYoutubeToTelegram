@@ -230,7 +230,7 @@ bot.command('stats', async (ctx) => {
         try {
             let channels = await Channel.find()
             let users = await Analytics.find()
-            let activeUsers = await Analytics.find({'status': 'user'})
+            let activeUsers = await Analytics.find({status: 'user'})
             ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length()}\n\nКоличество активных пользователей: ${activeUsers.length()}\n\nКоличество каналов в базе данных: ${channels.length()}`)
         } catch { 
             ctx.reply("Ошибка xD")
