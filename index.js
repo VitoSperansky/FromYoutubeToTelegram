@@ -12,7 +12,16 @@ import https from 'node:https';
 import { OAuth2Client } from 'google-auth-library'
 
 import pino from 'pino'
-const logger = pino();
+
+const pinoPretty = pino({
+    transport: {
+      targets: [
+        { level: 'info', target: 'pino/file', options: { destination: '/path/to/store/logs', mkdir: true } }
+      ]
+    }
+})
+
+const logger = pino(pinoPretty)
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
