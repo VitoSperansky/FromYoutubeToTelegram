@@ -18,10 +18,10 @@ const logger = pino({
       target: "pino-pretty",
       options: { 
         destination: "./app.log",
-        // We need to turn colorize off to get plain text logs.
         colorize: false,
       },
     },
+    level: 'debug'
 });
 logger.info('bot start')
 
@@ -489,7 +489,7 @@ async function convertUsernameToStandardUrl(username) {
 // Получение сообщений от пользователя
 bot.on('text', async (ctx) => {
     ctx.session = ctx.session || {};
-    logger.info(`Received text:, ${ctx.message.text}; Session state: ${ctx.session}`); // Логирование текста сообщения, Логирование состояния сессии
+    logger.debug(`Received text:, ${ctx.message.text}; Session state: ${ctx.session}`); // Логирование текста сообщения, Логирование состояния сессии
 
     try {
         if (ctx.session.awaitingYouTubeUrl) {
