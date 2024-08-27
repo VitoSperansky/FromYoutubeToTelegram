@@ -14,13 +14,6 @@ import { OAuth2Client } from 'google-auth-library'
 import pino from 'pino'
 
 const logger = pino(
-    {
-      prettyPrint: {
-        colorize: true,
-        levelFirst: true,
-        translateTime: "yyyy-dd-mm, h:MM:ss TT",
-      },
-    },
     pino.destination("./pino-logger.log")
 );
 
