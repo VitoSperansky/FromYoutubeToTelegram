@@ -227,11 +227,14 @@ bot.command('send', async (ctx) => {
 
 bot.command('stats', async (ctx) => {
     if (ctx.message.chat.id == MODERATOR_CHAT_ID) {
+        try {
             let channels = await Channel.find()
             let users = await Analytics.find()
             let activeUsers = await Analytics.find({status: 'user'})
-            ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length()}\n\nКоличество активных пользователей: ${activeUsers.length()}\n\nКоличество каналов в базе данных: ${channels.length()}`)
-            ctx.reply("Ошибка xD")
+            ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length}\n\nКоличество активных пользователей: ${activeUsers.length}\n\nКоличество каналов в базе данных: ${channels.length}`)
+        } catch (error) {
+            ctx.reply(`${error}, Ошибка xD`)
+        }       
     } else {
         ctx.reply("Вы не админ!")
     }
