@@ -489,7 +489,7 @@ async function convertUsernameToStandardUrl(username) {
 // Получение сообщений от пользователя
 bot.on('text', async (ctx) => {
     ctx.session = ctx.session || {};
-    logger.debug(`Received text:, ${ctx.message.text}; Session state: ${ctx.session}`); // Логирование текста сообщения, Логирование состояния сессии
+    logger.info(`Received text:, ${ctx.message.text}; Session state: ${ctx.session}`); // Логирование текста сообщения, Логирование состояния сессии
 
     try {
         if (ctx.session.awaitingYouTubeUrl) {
