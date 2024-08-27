@@ -10,7 +10,9 @@ import axios from 'axios';
 import dotenv from 'dotenv';
 import https from 'node:https';
 import { OAuth2Client } from 'google-auth-library'
-import logger from 'pino';
+
+import pino from 'pino'
+const logger = pino();
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
