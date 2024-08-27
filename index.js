@@ -383,6 +383,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
+    } else {
+        bot.telegram.sendMessage(chatId, "Запрос на получение списка каналов отсутствует, для получения напишите заново /find_channels")
     }
 }
 
