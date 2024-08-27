@@ -378,7 +378,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             : 'Не найдено';
 
         // Удаление системного сообщения
-        await bot.deleteMessage(msgWait.chat.id, msgWait.message_id);
+        await bot.telegram.deleteMessage(msgWait.chat.id, msgWait.message_id);
 
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
