@@ -13,10 +13,16 @@ import { OAuth2Client } from 'google-auth-library'
 
 import pino from 'pino'
 
-const logger = pino(
-    pino.destination("./pino-logger.log")
-);
-
+const logger = pino({
+    transport: {
+      target: "pino-pretty",
+      options: { 
+        destination: "./app.log",
+        // We need to turn colorize off to get plain text logs.
+        colorize: false,
+      },
+    },
+  });
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
