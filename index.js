@@ -11,6 +11,7 @@ import dotenv from 'dotenv';
 import https from 'node:https';
 import { OAuth2Client } from 'google-auth-library'
 
+import logger from ('./logger');
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,12 +25,6 @@ const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
 const REDIRECT_URL = 'https://fytt.tech:3000/oauth2callback';
 const LEMNOS_API_URL = 'http://91.108.243.132/YouTube-operational-API/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
-
-function sleep(ms) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, ms);
-    });
-}
 
 // Подключение к MongoDB
 await mongoose.connect(MONGO_URI);
@@ -46,7 +41,12 @@ const options = {
     cert: fs.readFileSync(`${certDir}/${domain}/fullchain.pem`)
 };
 
-const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN, {
+    polling: {
+        interval: 300,
+        autoStart: true
+    }
+});
 const server = https.createServer(options, app);
 
 server.listen(3000, () => {
@@ -85,6 +85,13 @@ const Analytics = mongoose.model('Analytics', analyticsSchema);
 
 // Настройка сессий
 bot.use(session());
+
+// Обработка ошибок
+
+bot.on("polling_error", err => {
+    bot.telegram.sendMessage(MODERATOR_CHAT_ID, err.data.error.message)
+    logger.fatal(err.data.error.message);
+})
 
 // Генерация ссылки для авторизации
 async function generateAuthUrl(chatId) {
@@ -191,7 +198,7 @@ bot.command('faq', async (ctx) => {
 })
 
 bot.command('send', async (ctx) => {
-    if(ctx.message.chat.id == MODERATOR_CHAT_ID) {
+    if (ctx.message.chat.id == MODERATOR_CHAT_ID) {
         let chatId = ctx.message.text.replace('/send ', '').replace(/ [\s\S]+/, '');
         let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '').toString();
         try {
@@ -201,6 +208,21 @@ bot.command('send', async (ctx) => {
             ctx.reply(`Сообщение успешно отправлено пользователю. \n\nChatId: ${chatId}\nТекст: ${text}`)
         } catch {
             ctx.reply("Ошибка при отправке сообщения.")
+        }
+    } else {
+        ctx.reply("Вы не админ!")
+    }
+})
+
+bot.command('stats', async (ctx) => {
+    if (ctx.message.chat.id == MODERATOR_CHAT_ID) {
+        try {
+            let channels = await Channel.find()
+            let users = await Analytics.find()
+            let activeUsers = await Analytics.find({'status': 'user'})
+            ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length()}\n\nКоличество активных пользователей: ${activeUsers.length()}\n\nКоличество каналов в базе данных: ${channels.length()}`)
+        } catch { 
+            ctx.reply("Ошибка xD")
         }
     } else {
         ctx.reply("Вы не админ!")
@@ -218,7 +240,7 @@ bot.command('submit', async (ctx) => {
         ctx.reply(`Сообщение успешно отправлено модератору.`)
     } catch {
         ctx.reply("Ошибка при отправке сообщения.")
-    } 
+    }
 })
 
 
@@ -233,13 +255,11 @@ async function setBotCommands() {
 
 // Функция для получения ссылок из описания канала с помощью стороннего API
 async function getChannelLinksFromDescription(channelId) {
-    console.log("yes")
     try {
         const response = await axios.get(`${LEMNOS_API_URL}?part=about&id=${channelId}`);
-        console.log(response.data)
         return response.data;
     } catch (error) {
-        console.error('Error getting channel info from Lemnos Life API:', error);
+        logger.error(`Error getting channel info from Lemnos Life API: ${error}`);
         return null;
     }
 }
@@ -285,6 +305,13 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
         }
     }
     if (chat.awatingChannels) {
+        try {
+            const msgWait = await bot.sendMessage(chatId, `Бот сопоставляет Youtube и Telegram каналы, это займет время...`);
+        } catch {
+            logger.warn(`Ошибка msgWait, chatid: ${chatId}`);
+        }
+
+
         chat.awatingChannels = false
         chat.status = "user"
         chat.save()
@@ -315,7 +342,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
                             requested_times: 0
                         });
 
-                        await bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
+                        logger.info(`Найден новый канал:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramLink}`);
                     }
                 }
             } catch (error) {
@@ -353,12 +380,12 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
             }).join('\n')
             : 'Не найдено';
 
+        // Удаление системного сообщения
+        await bot.deleteMessage(msgWait.chat.id, msgWait.message_id);
 
         // Отправка сообщений пользователю с нумерацией
         await sendLongMessageWithNumbering(chatId, 'Найденные каналы', foundChannelsMessage);
         await sendLongMessageWithNumbering(chatId, 'Не найденные каналы', notFoundChannelsMessage);
-
-
     }
 }
 
@@ -452,75 +479,77 @@ async function convertUsernameToStandardUrl(username) {
 // Получение сообщений от пользователя
 bot.on('text', async (ctx) => {
     ctx.session = ctx.session || {};
-    console.log('Received text:', ctx.message.text); // Логирование текста сообщения
-    console.log('Session state:', ctx.session); // Логирование состояния сессии
+    logger.debug(`Received text:, ${ctx.message.text}; Session state: ${ctx.session}`); // Логирование текста сообщения, Логирование состояния сессии
 
-    if (ctx.session.awaitingYouTubeUrl) {
-        ctx.session.youtubeUrl = ctx.message.text;
-        ctx.session.awaitingYouTubeUrl = false;
-        ctx.session.awaitingTelegramUrl = true;
-        ctx.reply('Введите URL Telegram-канала, к которому будет привязан YouTube-канал.');
-    } else if (ctx.session.awaitingTelegramUrl) {
-        ctx.session.telegramUrl = ctx.message.text;
-        ctx.session.awaitingTelegramUrl = false;
+    try {
+        if (ctx.session.awaitingYouTubeUrl) {
+            ctx.session.youtubeUrl = ctx.message.text;
+            ctx.session.awaitingYouTubeUrl = false;
+            ctx.session.awaitingTelegramUrl = true;
+            ctx.reply('Введите URL Telegram-канала, к которому будет привязан YouTube-канал.');
+        } else if (ctx.session.awaitingTelegramUrl) {
+            ctx.session.telegramUrl = ctx.message.text;
+            ctx.session.awaitingTelegramUrl = false;
 
-        let youtubeUrl = ctx.session.youtubeUrl;
-        const telegramUrl = ctx.session.telegramUrl;
+            let youtubeUrl = ctx.session.youtubeUrl;
+            const telegramUrl = ctx.session.telegramUrl;
 
-        // Проверяем, содержит ли URL username
-        const usernameMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/?]+)/);
-        if (usernameMatch) {
-            const username = usernameMatch[1];
-            youtubeUrl = await convertUsernameToStandardUrl(username);
-            if (!youtubeUrl) {
-                ctx.reply('Не удалось преобразовать username в стандартный URL. Пожалуйста, проверьте URL и попробуйте снова.');
+            // Проверяем, содержит ли URL username
+            const usernameMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/?]+)/);
+            if (usernameMatch) {
+                const username = usernameMatch[1];
+                youtubeUrl = await convertUsernameToStandardUrl(username);
+                if (!youtubeUrl) {
+                    ctx.reply('Не удалось преобразовать username в стандартный URL. Пожалуйста, проверьте URL и попробуйте снова.');
+                    return;
+                }
+            }
+
+            // Получение идентификатора канала из URL
+            const channelIdMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/channel\/([^\/?]+)/);
+            const channelId = channelIdMatch ? channelIdMatch[1] : null;
+            if (!channelId) {
+                ctx.reply('Не удалось извлечь идентификатор канала из URL. Пожалуйста, проверьте URL и попробуйте снова.');
                 return;
             }
         }
+    } catch (error) {
+        logger.fatal("Ошибка при связке ютуб и тг канала")
+    }
 
-        // Получение идентификатора канала из URL
-        const channelIdMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/channel\/([^\/?]+)/);
-        const channelId = channelIdMatch ? channelIdMatch[1] : null;
-        if (!channelId) {
-            ctx.reply('Не удалось извлечь идентификатор канала из URL. Пожалуйста, проверьте URL и попробуйте снова.');
-            return;
-        }
+    // Получение названия YouTube-канала
+    try {
+        const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
+        if (response.data && response.data.items && response.data.items.length > 0) {
+            const channelName = response.data.items[0].community[0].channelName;
 
-        // Получение названия YouTube-канала
-        const service = google.youtube('v3');
-        try {
-            const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
-            if (response.data && response.data.items && response.data.items.length > 0) {
-                const channelName = response.data.items[0].community[0].channelName;
+            let trySearchChannel = await Channel.findOne({ youtube_url: youtubeUrl })
+            if (trySearchChannel === null) {
+                if (channelName) {
+                    await PendingChannel.create({
+                        name: channelName,
+                        youtube_url: youtubeUrl,
+                        telegram_url: telegramUrl,
+                        submitted_by: ctx.from.id
+                    });
 
-                let trySearchChannel = await Channel.findOne({ youtube_url: youtubeUrl })
-                if (trySearchChannel === null) {
-                    if (channelName) {
-                        await PendingChannel.create({
-                            name: channelName,
-                            youtube_url: youtubeUrl,
-                            telegram_url: telegramUrl,
-                            submitted_by: ctx.from.id
-                        });
-
-                        ctx.reply('Спасибо! Информация отправлена на модерацию.');
-                        bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
-                            [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
-                            [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
-                        ]));
-                    } else {
-                        ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
-                    }
+                    ctx.reply('Спасибо! Информация отправлена на модерацию.');
+                    bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
+                        [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
+                        [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
+                    ]));
                 } else {
-                    ctx.reply("Спасибо, за вклад в наше сообщество, но запись о данном канале уже существует.")
+                    ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
                 }
             } else {
-                ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
+                ctx.reply("Спасибо, за вклад в наше сообщество, но запись о данном канале уже существует.")
             }
-        } catch (error) {
-            console.error('Error fetching YouTube channel:', error);
-            ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
+        } else {
+            ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
         }
+    } catch (error) {
+        console.error('Error fetching YouTube channel:', error);
+        ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
     }
 });
 
