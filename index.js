@@ -612,7 +612,7 @@ bot.action(/^approve_/, async (ctx) => {
                 await PendingChannel.deleteOne({ youtube_url: youtubeUrl });
                 ctx.reply(`Канал "${channel.name}" успешно добавлен.`);
                 try {
-                    bot.telegram.send(userChatId, `Канал "${channel.name}" одобрен и добавлен в базу данных, спасибо за помощь!`)
+                    bot.telegram.sendMessage(userChatId, `Канал "${channel.name}" одобрен и добавлен в базу данных, спасибо за помощь!`)
                 } catch (error) {   
                     logger.error(error)
                 }
