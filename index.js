@@ -214,16 +214,40 @@ bot.command('send', async (ctx) => {
     if (ctx.message.chat.id == MODERATOR_CHAT_ID) {
         let chatId = ctx.message.text.replace('/send ', '').replace(/ [\s\S]+/, '');
         let text = ctx.message.text.replace('/send ', '').replace(`${chatId} `, '').toString();
-        try {
-            await bot.telegram.sendMessage(chatId, text, {
-                parse_mode: 'HTML'
-            });
-            ctx.reply(`Сообщение успешно отправлено пользователю. \n\nChatId: ${chatId}\nТекст: ${text}`)
-        } catch {
-            ctx.reply("Ошибка при отправке сообщения.")
+
+        if(chatId === 'all') {
+            let Users = await Analytics.find()
+            let goodSend = [];
+            let badSend = [];
+            ctx.reply("Рассылка началась.")
+            for (let i = 0; i < Users.length; i++) {
+                try {
+                    bot.telegram.sendMessage(Users[i].chatId, text, { parse_mode: "HTML" })
+                    goodSend.push(Users[i])
+                } catch (error) {
+                    badSend.push(Users[i])
+                }
+            }
+            ctx.reply(`Рассылка завершена\n\nУспешно отправлено: ${goodSend.length} сообщений.\nНе получилось отправить: ${badSend.length} сообщений.`)
+        } else {
+            try {
+                await bot.telegram.sendMessage(chatId, text, { parse_mode: "HTML" });
+                ctx.reply(`Сообщение успешно отправлено пользователю. \n\nChatId: ${chatId}\nТекст: ${text}`)
+            } catch {
+                ctx.reply("Ошибка при отправке сообщения.")
+            }
         }
     } else {
         ctx.reply("Вы не админ!")
+    }
+})
+
+bot.command('jericho', async (ctx) => {
+    if (ctx.message.chat.id == MODERATOR_CHAT_ID) {
+        ctx.replyWithVideo(`https://i.gifer.com/370.gif`)
+        throw new Error()
+    } else {
+        ctx.reply("Не, ну ты не Тони Старк, извини.")
     }
 })
 
