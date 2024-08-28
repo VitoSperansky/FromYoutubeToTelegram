@@ -495,15 +495,15 @@ bot.on('text', async (ctx) => {
         if (ctx.session.awaitingYouTubeUrl) {
             ctx.session.youtubeUrl = ctx.message.text;
             ctx.session.awaitingYouTubeUrl = false;
-            ctx.session.awaitingTelegramUrl = true;
             ctx.reply('Введите URL Telegram-канала, к которому будет привязан YouTube-канал.');
+            ctx.session.awaitingTelegramUrl = true;
         }
         if (ctx.session.awaitingTelegramUrl) {
             ctx.session.telegramUrl = ctx.message.text;
             ctx.session.awaitingTelegramUrl = false;
 
             let youtubeUrl = ctx.session.youtubeUrl;
-            const telegramUrl = ctx.session.telegramUrl;
+            let telegramUrl = ctx.session.telegramUrl;
 
             // Проверяем, содержит ли URL username
             const usernameMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/?]+)/);
