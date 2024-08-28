@@ -56,6 +56,7 @@ const options = {
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN, {
     polling: {
+        interval: 300,
         autoStart: true
     }
 });
@@ -504,6 +505,8 @@ bot.on('text', async (ctx) => {
             let youtubeUrl = ctx.session.youtubeUrl;
             let telegramUrl = ctx.session.telegramUrl;
 
+            console.log(youtubeUrl, telegramUrl)
+
             // Проверяем, содержит ли URL username
             const usernameMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/?]+)/);
             if (usernameMatch) {
@@ -514,6 +517,8 @@ bot.on('text', async (ctx) => {
                     return;
                 }
             }
+
+            console.log(youtubeUrl, telegramUrl)
 
             // Получение идентификатора канала из URL
             const channelIdMatch = youtubeUrl.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/channel\/([^\/?]+)/);
@@ -544,6 +549,8 @@ bot.on('text', async (ctx) => {
                             [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
                             [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
                         ]));
+
+                        console.log(youtubeUrl, telegramUrl)
                     } else {
                         ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
                     }
