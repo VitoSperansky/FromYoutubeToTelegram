@@ -593,8 +593,9 @@ bot.action(/^approve_/, async (ctx) => {
     const youtubeUrl = ctx.match.input.split('_')[1];
     try {
         const channel = await PendingChannel.findOne({ youtube_url: youtubeUrl });
-
+        
         if (channel) {
+            let userChatId = channel.submitted_by
             // Проверяем, существует ли такой канал по youtube_url
             const existingChannel = await Channel.findOne({ youtube_url: channel.youtube_url });
 
@@ -610,6 +611,11 @@ bot.action(/^approve_/, async (ctx) => {
                 await newChannel.save(); // Используем save() для сохранения
                 await PendingChannel.deleteOne({ youtube_url: youtubeUrl });
                 ctx.reply(`Канал "${channel.name}" успешно добавлен.`);
+                try {
+                    bot.telegram.send(userChatId, `Канал "${channel.name}" одобрен и добавлен в базу данных, спасибо за помощь!`)
+                } catch (error) {   
+                    logger.error(error)
+                }
             } else {
                 ctx.reply(`Канал с URL "${youtubeUrl}" уже существует.`);
             }
