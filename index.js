@@ -56,7 +56,6 @@ const options = {
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN, {
     polling: {
-        interval: 300,
         autoStart: true
     }
 });
