@@ -15,11 +15,11 @@ import pino from 'pino'
 
 const logger = pino({
     transport: {
-      target: "pino-pretty",
-      options: { 
-        destination: "./app.log",
-        colorize: false,
-      },
+        target: "pino-pretty",
+        options: {
+            destination: "./app.log",
+            colorize: false,
+        },
     },
     level: 'debug'
 });
@@ -232,11 +232,11 @@ bot.command('stats', async (ctx) => {
         try {
             let channels = await Channel.find()
             let users = await Analytics.find()
-            let activeUsers = await Analytics.find({status: 'user'})
+            let activeUsers = await Analytics.find({ status: 'user' })
             ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length}\n\nКоличество активных пользователей: ${activeUsers.length}\n\nКоличество каналов в базе данных: ${channels.length}`)
         } catch (error) {
             ctx.reply(`${error}, Ошибка xD`)
-        }       
+        }
     } else {
         ctx.reply("Вы не админ!")
     }
@@ -523,45 +523,45 @@ bot.on('text', async (ctx) => {
                 ctx.reply('Не удалось извлечь идентификатор канала из URL. Пожалуйста, проверьте URL и попробуйте снова.');
                 return;
             }
+
+            // Получение названия YouTube-канала
+
+            const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
+            if (response.data && response.data.items && response.data.items.length > 0) {
+                const channelName = response.data.items[0].community[0].channelName;
+
+                let trySearchChannel = await Channel.findOne({ youtube_url: youtubeUrl })
+                if (trySearchChannel === null) {
+                    if (channelName) {
+                        await PendingChannel.create({
+                            name: channelName,
+                            youtube_url: youtubeUrl,
+                            telegram_url: telegramUrl,
+                            submitted_by: ctx.from.id
+                        });
+
+                        ctx.reply('Спасибо! Информация отправлена на модерацию.');
+                        bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
+                            [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
+                            [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
+                        ]));
+                    } else {
+                        ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
+                    }
+                } else {
+                    ctx.reply("Спасибо, за вклад в наше сообщество, но запись о данном канале уже существует.")
+                }
+            } else {
+                ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
+            }
+
+            logger.debug('Error fetching YouTube channel:', error);
+            ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
+
         }
     } catch (error) {
         logger.fatal("Ошибка при связке ютуб и тг канала")
     }
-
-    // Получение названия YouTube-канала
-
-        const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
-        if (response.data && response.data.items && response.data.items.length > 0) {
-            const channelName = response.data.items[0].community[0].channelName;
-
-            let trySearchChannel = await Channel.findOne({ youtube_url: youtubeUrl })
-            if (trySearchChannel === null) {
-                if (channelName) {
-                    await PendingChannel.create({
-                        name: channelName,
-                        youtube_url: youtubeUrl,
-                        telegram_url: telegramUrl,
-                        submitted_by: ctx.from.id
-                    });
-
-                    ctx.reply('Спасибо! Информация отправлена на модерацию.');
-                    bot.telegram.sendMessage(MODERATOR_CHAT_ID, `Новый запрос на привязку канала:\nYouTube: ${youtubeUrl}\nTelegram: ${telegramUrl}`, Markup.inlineKeyboard([
-                        [Markup.button.callback('Одобрить', `approve_${youtubeUrl}`)],
-                        [Markup.button.callback('Удалить', `delete_${youtubeUrl}`)],
-                    ]));
-                } else {
-                    ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
-                }
-            } else {
-                ctx.reply("Спасибо, за вклад в наше сообщество, но запись о данном канале уже существует.")
-            }
-        } else {
-            ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
-        }
-
-        logger.debug('Error fetching YouTube channel:', error);
-        ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
-    
 });
 
 // Модерация
