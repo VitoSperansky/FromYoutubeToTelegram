@@ -222,10 +222,10 @@ bot.command('send', async (ctx) => {
             ctx.reply("Рассылка началась.")
             for (let i = 0; i < Users.length; i++) {
                 try {
-                    bot.telegram.sendMessage(Users[i].chatId, text, { parse_mode: "HTML" })
-                    goodSend.push(Users[i])
+                    await bot.telegram.sendMessage(Users[i].chatId, text, { parse_mode: "HTML" });
+                    goodSend.push(Users[i]);
                 } catch (error) {
-                    badSend.push(Users[i])
+                    badSend.push(Users[i]);
                 }
             }
             ctx.reply(`Рассылка завершена\n\nУспешно отправлено: ${goodSend.length} сообщений.\nНе получилось отправить: ${badSend.length} сообщений.`)
