@@ -150,7 +150,7 @@ bot.start(async (ctx) => {
 
 
     await setBotCommands()
-    ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Телеграмм каналов ютуберов!</b>\nБот безопасен, так как представляет собой открытый исходный код, который может посмотреть каждый желающий. (/faq или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
+    ctx.replyWithHTML('<b>Приветствуем вас в нашем сервисе поиска Telegram-каналов ютуберов!</b>\nБот безопасен, так как представляет собой открытый исходный код, который может посмотреть каждый желающий. (/faq или пишите @vitosperansky)\n\nВыберите опцию:', Markup.inlineKeyboard([
         [Markup.button.callback('Найти YouTube-каналы в Telegram', 'find_channels')],
         [Markup.button.callback('Связать YouTube-канал с Telegram-каналом', 'link_channel')]
     ]));
@@ -186,7 +186,7 @@ const find_channels = async (ctx) => {
         await chat.save()
     }
 
-    ctx.replyWithMarkdown('*Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:*\n\n❗АВТОРИЗАЦИЯ НУЖНА ТОЛЬКО ДЛЯ ПОЛУЧЕНИЯ СПИСКА ВАШИХ ПОДПИСОК (ЗАПРАШИВАЮТСЯ ПРАВА YOUTUBE.READONLY - ТОЛЬКО ЧТЕНИЯ, [ОТКРЫТЫЙ ИСХОДНЫЙ КОД](https://github.com/VitoSperansky/FromYoutubeToTelegram)❗\n\n_Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)_', {
+    ctx.replyWithMarkdown('*Нажмите кнопку ниже для авторизации на Youtube и получения списка ваших подписок:*\n\n❗Авторизация нужна только для получения списка ваших подписок (запрашиваются права youtube.readonly - только чтения, подробнее /faq)❗\n\n_Процесс займет время: ~50 секунд. (в зависимости от количества ваших подписок)_', {
         reply_markup: {
             inline_keyboard: [
                 [{ text: 'Авторизоваться и найти подписки', url: authUrl }]
