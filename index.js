@@ -497,7 +497,8 @@ bot.on('text', async (ctx) => {
             ctx.session.awaitingYouTubeUrl = false;
             ctx.session.awaitingTelegramUrl = true;
             ctx.reply('Введите URL Telegram-канала, к которому будет привязан YouTube-канал.');
-        } else if (ctx.session.awaitingTelegramUrl) {
+        }
+        if (ctx.session.awaitingTelegramUrl) {
             ctx.session.telegramUrl = ctx.message.text;
             ctx.session.awaitingTelegramUrl = false;
 
@@ -528,7 +529,7 @@ bot.on('text', async (ctx) => {
     }
 
     // Получение названия YouTube-канала
-    try {
+
         const response = await axios.get(`${LEMNOS_API_URL}?part=community&id=${channelId}`);
         if (response.data && response.data.items && response.data.items.length > 0) {
             const channelName = response.data.items[0].community[0].channelName;
@@ -557,10 +558,10 @@ bot.on('text', async (ctx) => {
         } else {
             ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
         }
-    } catch (error) {
+
         logger.debug('Error fetching YouTube channel:', error);
         ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
-    }
+    
 });
 
 // Модерация
