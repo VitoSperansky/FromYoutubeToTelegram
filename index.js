@@ -558,7 +558,7 @@ bot.on('text', async (ctx) => {
             ctx.reply('Не удалось найти канал на YouTube. Пожалуйста, проверьте URL и попробуйте снова.');
         }
     } catch (error) {
-        console.error('Error fetching YouTube channel:', error);
+        logger.debug('Error fetching YouTube channel:', error);
         ctx.reply('Произошла ошибка при обработке запроса. Пожалуйста, попробуйте снова.');
     }
 });
