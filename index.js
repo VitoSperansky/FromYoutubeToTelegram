@@ -394,10 +394,11 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
         const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
         const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
+        let justChannelsUrls = newfoundChannels.map(ch => ch.youtube_url)
 
-        for(let i = 0; i < newfoundUrls.length; i++) {
+        for(let i = 0; i < justChannelsUrls.length; i++) {
             try {
-                let counterChannel = await Channel.findOne({youtube_url: `newFoundUrls[${i}]`})
+                let counterChannel = await Channel.findOne({youtube_url: justChannelsUrls[i]})
                 counterChannel.requested_times += 1
                 counterChannel.save();
             } catch (error) {
