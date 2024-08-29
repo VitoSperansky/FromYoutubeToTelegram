@@ -56,7 +56,6 @@ const options = {
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN, {
     polling: {
-        interval: 300,
         autoStart: true
     }
 });
@@ -85,7 +84,8 @@ const analyticsSchema = new mongoose.Schema({
     username: String,
     chatId: { type: String, unique: true },
     awatingChannels: Boolean,
-    status: String
+    status: String,
+    count: Number,
 },
     {
         timestamps: true
@@ -131,7 +131,8 @@ bot.start(async (ctx) => {
                 chatId: ctx.message.chat.id,
                 username: username,
                 awatingChannels: true,
-                status: "member"
+                status: "member",
+                count: 0
             })
             await newChat.save()
         } catch {
@@ -139,7 +140,8 @@ bot.start(async (ctx) => {
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name,
                 awatingChannels: true,
-                status: "member"
+                status: "member",
+                count: 0
             })
             await newChat.save()
         }
@@ -171,7 +173,8 @@ const find_channels = async (ctx) => {
                 chatId: ctx.message.chat.id,
                 username: username,
                 awatingChannels: true,
-                status: "member"
+                status: "member",
+                countUse: 0
             })
             await newChat.save()
         } catch {
@@ -179,7 +182,8 @@ const find_channels = async (ctx) => {
                 chatId: ctx.message.chat.id,
                 username: ctx.message.chat.first_name,
                 awatingChannels: true,
-                status: "member"
+                status: "member",
+                countUse: 0
             })
             await newChat.save()
         }
@@ -259,7 +263,9 @@ bot.command('stats', async (ctx) => {
             let channels = await Channel.find()
             let users = await Analytics.find()
             let activeUsers = await Analytics.find({ status: 'user' })
-            ctx.replyWithHTML(`Статистика:\n\nКоличество пользователей: ${users.length}\n\nКоличество активных пользователей: ${activeUsers.length}\n\nКоличество каналов в базе данных: ${channels.length}`)
+            let more2Users = await Analytics.find({ count: { $gt: 1, $lt: 5 } })
+            let more5Users = await Analytics.find({ count: { $gt: 5 } })
+            ctx.replyWithHTML(`<b>Статистика:</b>\n\nКоличество пользователей: ${users.length}\nКоличество активных пользователей: ${activeUsers.length}\nКоличество пользователей, которые нашли каналы от 2 до 4 раз: ${more2Users.length}\nКоличество пользователей, которые нашли каналы от 5 раз: ${more5Users.length}\nКоличество каналов в базе данных: ${channels.length}`)
         } catch (error) {
             ctx.reply(`${error}, Ошибка xD`)
         }
@@ -348,6 +354,8 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
         chat.awatingChannels = false
         chat.status = "user"
+        let userCount = chat.count
+        chat.count += userCount
         chat.save()
 
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
