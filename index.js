@@ -85,7 +85,7 @@ const analyticsSchema = new mongoose.Schema({
     chatId: { type: String, unique: true },
     awatingChannels: Boolean,
     status: String,
-    count: Number,
+    count: Int32,
 },
     {
         timestamps: true
