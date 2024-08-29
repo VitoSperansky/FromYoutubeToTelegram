@@ -354,7 +354,7 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
         chat.awatingChannels = false
         chat.status = "user"
-        chat.count = 1
+        chat.count += 1
 
         await chat.save()
 
