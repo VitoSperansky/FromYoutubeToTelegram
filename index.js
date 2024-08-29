@@ -354,14 +354,10 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
         chat.awatingChannels = false
         chat.status = "user"
-        let userCount;
-        try {
-            userCount = chat.count
-            chat.count += userCount
-        } catch {
-            chat.count = 0
-        }
-        chat.save()
+
+        let userCount = chat.count
+        chat.count += userCount
+        await chat.save()
 
         const youtubeUrls = subscriptions.map(sub => `https://www.youtube.com/channel/${sub.channelId}`);
 
