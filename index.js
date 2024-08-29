@@ -264,7 +264,7 @@ bot.command('stats', async (ctx) => {
             let users = await Analytics.find()
             let activeUsers = await Analytics.find({ status: 'user' })
             let more2Users = await Analytics.find({ count: { $gt: 1, $lt: 5 } })
-            let more5Users = await Analytics.find({ count: { $gt: 5 } })
+            let more5Users = await Analytics.find({ count: { $gt: 4 } })
             ctx.replyWithHTML(`<b>Статистика:</b>\n\nКоличество пользователей: ${users.length}\nКоличество активных пользователей: ${activeUsers.length}\nКоличество пользователей, которые нашли каналы от 2 до 4 раз: ${more2Users.length}\nКоличество пользователей, которые нашли каналы от 5 раз: ${more5Users.length}\nКоличество каналов в базе данных: ${channels.length}`)
         } catch (error) {
             ctx.reply(`${error}, Ошибка xD`)
@@ -394,6 +394,16 @@ async function checkAndAddNewChannels(subscriptions, youtubeApiKey, chatId) {
 
         const newfoundChannels = await Channel.find({ youtube_url: { $in: youtubeUrls } });
         const newfoundUrls = new Set(newfoundChannels.map(ch => ch.youtube_url));
+
+        for(let i = 0; i < newfoundUrls.length; i++) {
+            try {
+                let counterChannel = await Channel.findOne({youtube_url: `newFoundUrls[${i}]`})
+                counterChannel.requested_times += 1
+                counterChannel.save();
+            } catch (error) {
+                logger.error(error)
+            }
+        }
 
         // Фильтрация не найденных каналов
         const newnotFoundChannels = subscriptions.filter(sub => !newfoundUrls.has(`https://www.youtube.com/channel/${sub.channelId}`));
