@@ -68,7 +68,7 @@ server.listen(3000, () => {
 // Определение схем и моделей
 const channelSchema = new mongoose.Schema({
     name: String,
-    youtube_url: { type: String, unique: true }, // Обеспечиваем уникальность youtube_url
+    youtube_url: { type: String }, // Обеспечиваем уникальность youtube_url
     telegram_url: String,
     requested_times: { type: Number, default: 0 }
 });
