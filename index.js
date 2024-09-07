@@ -36,7 +36,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const CREDENTIALS_PATH = process.env.CREDENTIALS_PATH;
 const SCOPES = ['https://www.googleapis.com/auth/youtube.readonly'];
 const REDIRECT_URL = 'https://fytt.tech:3000/oauth2callback';
-const LEMNOS_API_URL = 'http://91.108.243.132/YouTube-operational-API/channels';
+const LEMNOS_API_URL = 'http://91.108.243.117/YouTube-operational-API/channels';
 const MODERATOR_CHAT_ID = process.env.MODERATOR_CHAT_ID;
 
 // Подключение к MongoDB
@@ -298,7 +298,7 @@ async function setBotCommands() {
     ]);
 }
 
-// Функция для получения ссылок из описания канала с помощью стороннего API
+// Функция для получения ссылок из описания канала с помощью Lemson API
 async function getChannelLinksFromDescription(channelId) {
     try {
         const response = await axios.get(`${LEMNOS_API_URL}?part=about&id=${channelId}`);
