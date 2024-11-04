@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import express from 'express';
 import fs from 'fs';
+import favicon from 'express-favicon'
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { session } from 'telegraf'; // Используем встроенную поддержку сессий
@@ -28,6 +29,8 @@ logger.info('bot start')
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+app.use(favicon(__dirname + '/assets/fytt.png'));
+
 
 dotenv.config();
 
