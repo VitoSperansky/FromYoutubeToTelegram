@@ -720,8 +720,8 @@ function splitMessageWithHeader(header, message, maxLength) {
 }
 
 // Запуск веб-сервера и бота
-
-bot.launch();
+const option = {dropPendingUpdates: true}
+bot.launch(option);
 
 // Остановка сервера и бота при завершении работы
 process.once('SIGINT', () => bot.stop('SIGINT'));
