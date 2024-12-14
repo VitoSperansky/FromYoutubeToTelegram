@@ -505,7 +505,12 @@ async function listSubscriptions(auth) {
 
 // Обработка нажатий на кнопку "Связать YouTube-канал с Telegram-каналом"
 const link_channel = (ctx) => {
-    ctx.reply('Пожалуйста, отправьте URL-адрес YouTube-канала, к которому хотите привязать Telegram-канал.');
+    try {
+        ctx.reply('Пожалуйста, отправьте URL-адрес YouTube-канала, к которому хотите привязать Telegram-канал.');
+    } catch {
+        logger.error("cant send linkchannel")
+    }
+    
     ctx.session = ctx.session || {}; // Инициализация сессии, если она отсутствует
     ctx.session.awaitingYouTubeUrl = true; // Установка состояния ожидания YouTube URL
 };
